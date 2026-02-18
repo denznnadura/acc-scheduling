@@ -92,7 +92,7 @@
                 <a href="{{ route('admin.login') }}" class="portal-link admin-box">
                     <span class="icon">🛡️</span>
                     <span class="btn-title">Admin Portal</span>
-                    <span class="btn-sub">Authorized Only</span>
+                    <span class="btn-sub">Authorized Only for Admin</span>
                 </a>
 
                 <a href="{{ route('login') }}" class="portal-link user-box">
