@@ -56,7 +56,7 @@ class ProfileController extends Controller
                 ->with('status', 'verification-link-sent');
         }
 
-        // Send notification to current email
+        
         Mail::to($user->email)->send(new ProfileUpdatedMail($user));
 
         return Redirect::route('profile.edit')

@@ -15,6 +15,7 @@ use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Artisan;
 
 Route::get('/', function () {
     return view('welcome');
@@ -60,6 +61,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Admin Enrollment Management
     Route::get('admin/enrollments', [EnrollmentController::class, 'adminIndex'])->name('admin.enrollments.index');
+    // Isinama ko na rin yung POST at DELETE routes mo dito buddy
     Route::post('admin/enrollments', [EnrollmentController::class, 'adminStore'])->name('admin.enrollments.store');
     Route::delete('admin/enrollments/{enrollment}', [EnrollmentController::class, 'adminDestroy'])->name('admin.enrollments.destroy');
 
@@ -71,6 +73,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('schedules/{schedule}/students-pdf', [ScheduleController::class, 'studentsListPdf'])->name('schedules.students-pdf');
         Route::get('schedules/{schedule}/students-excel', [ScheduleController::class, 'studentsListExcel'])->name('schedules.students-excel');
         Route::get('schedules/{schedule}/students-word', [ScheduleController::class, 'studentsListWord'])->name('schedules.students-word');
+
+        // --- DAGDAG NI BUDDY: 1-Click Download Routes ---
+        Route::get('/full-schedule/pdf', [ScheduleController::class, 'downloadFullPdf'])->name('full.pdf');
+        Route::get('/full-schedule/excel', [ScheduleController::class, 'downloadFullExcel'])->name('full.excel');
+        Route::get('/full-schedule/word', [ScheduleController::class, 'downloadFullWord'])->name('full.word');
     });
 
     // Remove student enrollment routes - students can only view
@@ -86,8 +93,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('reports/room-utilization', [ReportController::class, 'roomUtilization'])->name('reports.room-utilization');
     });
 
-   
+    Route::get('/clear-all', function() {
+        Artisan::call('config:clear');
+        Artisan::call('cache:clear');
+        Artisan::call('view:clear');
+        return "Cache Cleared!"; // Dagdag lang na return message buddy
+    });
 });
-
 
 require __DIR__ . '/auth.php';

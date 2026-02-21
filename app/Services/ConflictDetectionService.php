@@ -15,7 +15,6 @@ class ConflictDetectionService
         // Check room conflicts
         if ($this->hasRoomConflict($schedule, $excludeId)) {
             $conflicts[] = 'Room is already booked at this time';
-            // Only log if schedule has been saved
             if ($schedule->exists) {
                 $this->logConflict($schedule->id, 'room', 'Room conflict detected');
             }
@@ -29,7 +28,7 @@ class ConflictDetectionService
             }
         }
 
-        // Check student conflicts (if section has overlapping schedules)
+        // Check student/section conflicts
         if ($this->hasSectionConflict($schedule, $excludeId)) {
             $conflicts[] = 'Section already has a class scheduled at this time';
             if ($schedule->exists) {
@@ -38,6 +37,36 @@ class ConflictDetectionService
         }
 
         return $conflicts;
+    }
+
+    /**
+     * NEW: Automatically filters selected days to identify which are available 
+     * and which have conflicts, allowing the system to skip problematic slots.
+     */
+    public function filterAvailableDays(array $days, array $validatedData): array
+    {
+        $availableDays = [];
+        $skippedDays = [];
+
+        foreach ($days as $day) {
+            // Create a temporary schedule object for testing each day
+            $tempSchedule = new \App\Models\Schedule(array_merge($validatedData, ['day' => $day]));
+            $tempSchedule->status = 'active';
+
+            // Check for conflicts on this specific day
+            $conflicts = $this->detectConflicts($tempSchedule);
+
+            if (empty($conflicts)) {
+                $availableDays[] = $day; // Safe to save
+            } else {
+                $skippedDays[$day] = $conflicts; // Store conflict details for reporting
+            }
+        }
+
+        return [
+            'available' => $availableDays,
+            'skipped' => $skippedDays
+        ];
     }
 
     private function hasRoomConflict(Schedule $schedule, ?int $excludeId): bool
@@ -62,30 +91,24 @@ class ConflictDetectionService
             ->where($column, $value)
             ->where('status', 'active')
             ->where(function ($q) use ($schedule) {
-                // Check for time overlaps
                 $q->where(function ($q2) use ($schedule) {
-                    // New schedule starts during existing schedule
                     $q2->where('start_time', '<=', $schedule->start_time)
                         ->where('end_time', '>', $schedule->start_time);
                 })
-                    ->orWhere(function ($q2) use ($schedule) {
-                        // New schedule ends during existing schedule
-                        $q2->where('start_time', '<', $schedule->end_time)
-                            ->where('end_time', '>=', $schedule->end_time);
-                    })
-                    ->orWhere(function ($q2) use ($schedule) {
-                        // New schedule completely contains existing schedule
-                        $q2->where('start_time', '>=', $schedule->start_time)
-                            ->where('end_time', '<=', $schedule->end_time);
-                    });
+                ->orWhere(function ($q2) use ($schedule) {
+                    $q2->where('start_time', '<', $schedule->end_time)
+                        ->where('end_time', '>=', $schedule->end_time);
+                })
+                ->orWhere(function ($q2) use ($schedule) {
+                    $q2->where('start_time', '>=', $schedule->start_time)
+                        ->where('end_time', '<=', $schedule->end_time);
+                });
             });
 
-        // Exclude current schedule if editing
         if ($excludeId) {
             $query->where('id', '!=', $excludeId);
         }
 
-        // Exclude the schedule being checked if it has an ID
         if ($schedule->exists) {
             $query->where('id', '!=', $schedule->id);
         }
@@ -106,10 +129,7 @@ class ConflictDetectionService
     public function resolveConflict(int $conflictId): bool
     {
         $conflict = ScheduleConflict::find($conflictId);
-
-        if (!$conflict) {
-            return false;
-        }
+        if (!$conflict) return false;
 
         $conflict->update([
             'status' => 'resolved',

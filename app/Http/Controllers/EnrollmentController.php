@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class EnrollmentController extends Controller
 {
-    // ADMIN: Manage all enrollments
+    // ADMIN: Manage all enrollments (No changes here)
     public function adminIndex(Request $request)
     {
         $currentSemester = Semester::where('is_active', true)->first();
@@ -20,7 +20,6 @@ class EnrollmentController extends Controller
         $query = Enrollment::with(['student.user', 'student.section', 'schedule.course', 'schedule.faculty.user'])
             ->where('semester_id', $currentSemester->id ?? null);
 
-        // Filters
         if ($request->filled('section_id')) {
             $query->whereHas('student', function ($q) use ($request) {
                 $q->where('section_id', $request->section_id);
@@ -43,58 +42,88 @@ class EnrollmentController extends Controller
         return view('admin.enrollments.index', compact('enrollments', 'sections', 'students', 'schedules', 'currentSemester'));
     }
 
-    // ADMIN: Enroll student
+    /**
+     * UPDATED ADMIN STORE: Automated Section-Based Enrollment
+     * This will now find all schedules for the student's section and enroll them automatically.
+     */
     public function adminStore(Request $request)
     {
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
-            'schedule_id' => 'required|exists:schedules,id',
+            // schedule_id is now optional because we will prioritize auto-detecting all schedules
+            'schedule_id' => 'nullable|exists:schedules,id',
         ]);
 
         $student = Student::findOrFail($validated['student_id']);
-        $schedule = Schedule::findOrFail($validated['schedule_id']);
+        $currentSemester = Semester::where('is_active', true)->first();
 
-        // Check if schedule belongs to student's section
-        if ($schedule->section_id !== $student->section_id) {
-            return back()->withErrors(['error' => 'This schedule does not belong to the student\'s section.']);
+        if (!$currentSemester) {
+            return back()->withErrors(['error' => 'No active semester found.']);
         }
 
-        // Check if schedule is full
-        if ($schedule->enrolled_students >= $schedule->max_students) {
-            return back()->withErrors(['error' => 'This schedule is already full.']);
-        }
+        // SMART LOGIC: Find all active schedules that belong to the student's section
+        $sectionSchedules = Schedule::where('section_id', $student->section_id)
+            ->where('semester_id', $currentSemester->id)
+            ->where('status', 'active')
+            ->get();
 
-        // Check if already enrolled
-        $exists = Enrollment::where('student_id', $student->id)
-            ->where('schedule_id', $schedule->id)
-            ->where('status', 'enrolled')
-            ->exists();
-
-        if ($exists) {
-            return back()->withErrors(['error' => 'Student is already enrolled in this schedule.']);
+        if ($sectionSchedules->isEmpty()) {
+            return back()->withErrors(['error' => 'No schedules found for this student\'s section.']);
         }
 
         DB::beginTransaction();
         try {
-            Enrollment::create([
-                'student_id' => $student->id,
-                'schedule_id' => $schedule->id,
-                'semester_id' => $schedule->semester_id,
-                'status' => 'enrolled',
-                'enrolled_at' => now(),
-            ]);
+            $enrolledCount = 0;
+            $skippedCount = 0;
 
-            $schedule->increment('enrolled_students');
+            foreach ($sectionSchedules as $schedule) {
+                // Check if already enrolled in this specific schedule
+                $alreadyEnrolled = Enrollment::where('student_id', $student->id)
+                    ->where('schedule_id', $schedule->id)
+                    ->where('status', 'enrolled')
+                    ->exists();
+
+                // Skip if already enrolled or if schedule is full
+                if ($alreadyEnrolled || $schedule->enrolled_students >= $schedule->max_students) {
+                    $skippedCount++;
+                    continue;
+                }
+
+                // Create Enrollment record
+                Enrollment::create([
+                    'student_id' => $student->id,
+                    'schedule_id' => $schedule->id,
+                    'semester_id' => $currentSemester->id,
+                    'status' => 'enrolled',
+                    'enrolled_at' => now(),
+                ]);
+
+                // Increment student count in the schedule table
+                $schedule->increment('enrolled_students');
+                $enrolledCount++;
+            }
+
+            if ($enrolledCount === 0) {
+                DB::rollBack();
+                return back()->withErrors(['error' => 'Student is already enrolled in all available subjects or schedules are full.']);
+            }
 
             DB::commit();
-            return back()->with('success', 'Student enrolled successfully.');
+            
+            $msg = "Successfully enrolled student in {$enrolledCount} subjects.";
+            if ($skippedCount > 0) {
+                $msg .= " ({$skippedCount} subjects were skipped as they were already enrolled or full).";
+            }
+
+            return back()->with('success', $msg);
+
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Failed to enroll student: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Enrollment failed: ' . $e->getMessage()]);
         }
     }
 
-    // ADMIN: Drop student enrollment
+    // ADMIN: Drop student enrollment (No changes here)
     public function adminDestroy(Enrollment $enrollment)
     {
         DB::beginTransaction();
@@ -116,7 +145,7 @@ class EnrollmentController extends Controller
         }
     }
 
-    // STUDENT: View only their enrollments
+    // STUDENT: View only their enrollments (No changes here)
     public function index()
     {
         $student = auth()->user()->student;
@@ -131,7 +160,6 @@ class EnrollmentController extends Controller
             return redirect()->route('dashboard')->withErrors(['error' => 'No active semester found.']);
         }
 
-        // Get student's enrollments
         $enrollments = Enrollment::with(['schedule.course', 'schedule.faculty.user', 'schedule.room', 'schedule.section'])
             ->where('student_id', $student->id)
             ->where('semester_id', $currentSemester->id)

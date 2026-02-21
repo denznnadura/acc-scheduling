@@ -12,17 +12,15 @@ use Illuminate\View\View;
 class AuthenticatedSessionController extends Controller
 {
     
-    public function create(): View
-    {
-        return view('auth.login');
-    }
-
-    
     public function adminCreate(): View
     {
         return view('auth.admin-login');
     }
-
+    
+public function create(): View
+    {
+        return view('auth.login');
+    }
    
     public function adminStore(LoginRequest $request): RedirectResponse
     {
