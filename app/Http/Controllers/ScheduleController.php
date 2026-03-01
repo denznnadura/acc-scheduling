@@ -8,6 +8,7 @@ use App\Models\Course;
 use App\Models\Faculty;
 use App\Models\Room;
 use App\Models\Semester;
+use App\Models\Program;
 use App\Services\ConflictDetectionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +25,9 @@ class ScheduleController extends Controller
 
     public function index(Request $request)
     {
+        $programs = Program::where('is_active', true)->get();
+        $selectedProgram = $request->get('program', 'all');
+
         $query = Schedule::with([
             'section.program',
             'course',
@@ -32,6 +36,12 @@ class ScheduleController extends Controller
             'semester.academicYear',
             'enrollments'
         ]);
+
+        if ($selectedProgram !== 'all') {
+            $query->whereHas('section.program', function($q) use ($selectedProgram) {
+                $q->where('code', $selectedProgram);
+            });
+        }
 
         if (auth()->user()->isFaculty()) {
             $query->where('faculty_id', auth()->user()->faculty->id);
@@ -64,7 +74,7 @@ class ScheduleController extends Controller
         $faculty = Faculty::with('user')->where('is_active', true)->get(); 
         $rooms = Room::where('is_active', true)->get();
 
-        return view('schedules.index', compact('schedules', 'semesters', 'sections', 'faculty', 'rooms'));
+        return view('schedules.index', compact('schedules', 'semesters', 'sections', 'faculty', 'rooms', 'programs', 'selectedProgram'));
     }
 
     public function create()

@@ -20,6 +20,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'role_id',
+        'role',
         'phone',
         'address',
         'is_active',
@@ -56,17 +57,20 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function isAdmin(): bool
     {
-        return $this->role?->name === 'Admin';
+        $roleName = is_object($this->role) ? $this->role->name : $this->role;
+        return strtolower($roleName) === 'admin';
     }
 
     public function isFaculty(): bool
     {
-        return $this->role?->name === 'Faculty';
+        $roleName = is_object($this->role) ? $this->role->name : $this->role;
+        return strtolower($roleName) === 'faculty';
     }
 
     public function isStudent(): bool
     {
-        return $this->role?->name === 'Student';
+        $roleName = is_object($this->role) ? $this->role->name : $this->role;
+        return strtolower($roleName) === 'student';
     }
 
     public function sendPasswordResetNotification($token)
@@ -74,9 +78,6 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new ResetPasswordNotification($token));
     }
 
-    /**
-     * Send the email verification notification with custom template.
-     */
     public function sendEmailVerificationNotification()
     {
         $this->notify(new CustomVerifyEmail);

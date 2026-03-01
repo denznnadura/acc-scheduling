@@ -16,7 +16,11 @@ class DepartmentController extends Controller
 
     public function create()
     {
-        $users = User::where('is_active', true)->get();
+        $users = User::where('is_active', true)
+            ->whereIn('role_id', [1, 3])
+            ->orderBy('name', 'asc')
+            ->get();
+            
         return view('departments.create', compact('users'));
     }
 
@@ -38,7 +42,11 @@ class DepartmentController extends Controller
 
     public function edit(Department $department)
     {
-        $users = User::where('is_active', true)->get();
+        $users = User::where('is_active', true)
+            ->whereIn('role_id', [1, 3])
+            ->orderBy('name', 'asc')
+            ->get();
+
         return view('departments.edit', compact('department', 'users'));
     }
 

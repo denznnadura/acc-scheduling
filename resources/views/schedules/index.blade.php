@@ -1,10 +1,8 @@
-{{-- resources/views/schedules/index.blade.php --}}
 <x-app-layout>
     <x-slot name="pageTitle">Schedules</x-slot>
     <x-slot name="breadcrumb">Manage Schedules</x-slot>
 
     <style>
-        /* Minimalist Schedules Page */
         .schedules-container {
             max-width: 1400px;
             margin: 0 auto;
@@ -34,7 +32,39 @@
             margin: 0;
         }
 
-        /* --- DOWNLOAD BUTTONS STYLE --- */
+        /* Program Tabs Styles */
+        .program-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            padding-bottom: 5px;
+        }
+
+        .tab-item {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-tertiary);
+        }
+
+        .tab-item.active {
+            background: var(--acc-primary);
+            color: white !important;
+            border-color: var(--acc-primary);
+            box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.2);
+        }
+
+        .tab-item:hover:not(.active) {
+            background: var(--border-light);
+            color: var(--text-primary);
+        }
+
         .download-group {
             display: flex;
             gap: 10px;
@@ -56,9 +86,9 @@
             cursor: pointer;
         }
 
-        .btn-pdf { background-color: #e11d48; }   /* Solid Red */
-        .btn-excel { background-color: #10b981; } /* Solid Green */
-        .btn-word { background-color: #2563eb; }  /* Solid Blue */
+        .btn-pdf { background-color: #e11d48; }
+        .btn-excel { background-color: #10b981; }
+        .btn-word { background-color: #2563eb; }
 
         .btn-download:hover {
             opacity: 0.9;
@@ -66,7 +96,6 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        /* --- CREATE BUTTON --- */
         .create-btn {
             background: var(--acc-primary);
             border: none;
@@ -84,7 +113,6 @@
 
         .create-btn:hover { background: var(--acc-light-blue); color: white; }
 
-        /* --- FILTER SECTION --- */
         .filter-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
@@ -153,7 +181,6 @@
             align-items: center;
         }
 
-        /* --- TABLE STYLES --- */
         .table-card { 
             background: var(--bg-secondary); 
             border: 1px solid var(--border-color); 
@@ -169,18 +196,15 @@
         .schedules-table thead th { padding: 14px 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-tertiary); text-align: left; }
         .schedules-table tbody td { padding: 16px; font-size: 13px; color: var(--text-primary); border-bottom: 1px solid var(--border-light); }
         
-        /* Badges */
         .course-badge { background: var(--acc-primary); color: white; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 12px; }
         .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
         .status-badge.active { background: #f0fdf4; color: #059669; }
         .status-badge.inactive { background: #f9fafb; color: #6b7280; }
 
-        /* Action Buttons Row */
         .action-buttons { 
             display: flex; 
             gap: 8px; 
             align-items: center;
-            pointer-events: auto !important;
         }
 
         .action-btn { 
@@ -194,14 +218,12 @@
             gap: 6px; 
             border: none; 
             transition: all 0.2s;
-            cursor: pointer !important;
+            cursor: pointer;
         }
 
         .action-btn.students { background: #dbeafe; color: #1e40af; }
         .action-btn.edit { background: #fef3c7; color: #92400e; }
-        
         .action-btn:hover { transform: translateY(-1px); filter: brightness(0.95); }
-
     </style>
 
     <div class="schedules-container">
@@ -231,6 +253,19 @@
             </div>
         </div>
 
+        <div class="program-tabs">
+            <a href="{{ route('schedules.index', array_merge(request()->query(), ['program' => 'all'])) }}" 
+               class="tab-item {{ $selectedProgram == 'all' ? 'active' : '' }}">
+                All Courses
+            </a>
+            @foreach($programs as $program)
+                <a href="{{ route('schedules.index', array_merge(request()->query(), ['program' => $program->code])) }}" 
+                   class="tab-item {{ $selectedProgram == $program->code ? 'active' : '' }}">
+                    {{ $program->code }}
+                </a>
+            @endforeach
+        </div>
+
         @if(request()->filled('section_id'))
             <div class="filter-indicator">
                 <div>
@@ -245,9 +280,10 @@
             </div>
         @endif
 
-        {{-- Filter Section --}}
         <div class="filter-card">
             <form method="GET" action="{{ route('schedules.index') }}">
+                <input type="hidden" name="program" value="{{ $selectedProgram }}">
+                
                 <div class="filter-grid-layout">
                     <div class="filter-column">
                         <div class="filter-group">
@@ -351,7 +387,6 @@
                                             <a href="{{ route('schedules.students', $schedule->id) }}" class="action-btn students">
                                                 <i class='bx bx-user'></i> Students
                                             </a>
-
                                             @if (auth()->user()->isAdmin())
                                                 <a href="{{ route('schedules.edit', $schedule->id) }}" class="action-btn edit">
                                                     <i class='bx bx-edit'></i> Edit
@@ -366,7 +401,7 @@
                                 <td colspan="9" class="text-center py-5">
                                     <div class="empty-state">
                                         <i class='bx bx-calendar-x' style="font-size: 48px; opacity: 0.3;"></i>
-                                        <div class="empty-state-title">No Schedules Found</div>
+                                        <div class="empty-state-title" style="margin-top: 10px; font-weight: 600; color: var(--text-tertiary);">No Schedules Found</div>
                                     </div>
                                 </td>
                             </tr>
@@ -376,7 +411,7 @@
             </div>
             @if ($schedules->hasPages())
                 <div class="pagination-wrapper" style="padding: 20px;">
-                    {{ $schedules->links() }}
+                    {{ $schedules->appends(request()->query())->links() }}
                 </div>
             @endif
         </div>

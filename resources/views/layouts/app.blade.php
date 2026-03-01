@@ -17,14 +17,11 @@
 
     <style>
         :root {
-            /* ACC Color Palette */
             --acc-primary: #1e40af;
             --acc-secondary: #dc2626;
             --acc-accent: #059669;
             --acc-gold: #f59e0b;
             --acc-light-blue: #3b82f6;
-
-            /* Minimalist Neutrals */
             --bg-primary: #fafafa;
             --bg-secondary: #ffffff;
             --text-primary: #0f172a;
@@ -32,12 +29,8 @@
             --text-tertiary: #94a3b8;
             --border-color: #e2e8f0;
             --border-light: #f1f5f9;
-
-            /* Sidebar */
             --sidebar-width: 260px;
             --sidebar-collapsed-width: 72px;
-
-            /* Minimalist Shadows */
             --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
             --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06);
@@ -61,7 +54,6 @@
             letter-spacing: -0.01em;
         }
 
-        /* Minimalist Sidebar */
         .sidebar {
             position: fixed;
             left: 0;
@@ -133,7 +125,6 @@
             display: none;
         }
 
-        /* Minimalist Menu */
         .sidebar-menu-container {
             flex: 1;
             overflow-y: auto;
@@ -227,7 +218,6 @@
             padding: 11px;
         }
 
-        /* Minimalist Footer */
         .sidebar-footer {
             padding: 16px;
             border-top: 1px solid var(--border-light);
@@ -284,7 +274,6 @@
             display: none;
         }
 
-        /* Minimalist Main Content */
         .main-content {
             margin-left: var(--sidebar-width);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -299,7 +288,6 @@
             width: calc(100% - var(--sidebar-collapsed-width));
         }
 
-        /* Minimalist Navbar */
         .navbar {
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border-light);
@@ -375,7 +363,6 @@
             margin-right: 6px;
         }
 
-        /* Minimalist User Menu */
         .user-menu {
             display: flex;
             align-items: center;
@@ -525,7 +512,6 @@
             font-size: 18px;
         }
 
-        /* Content Area */
         .page-content {
             flex: 1;
             padding: 24px;
@@ -537,14 +523,12 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
 
-        /* Minimalist Alerts */
         .alert {
             border: 1px solid;
             border-radius: 10px;
@@ -562,7 +546,6 @@
                 opacity: 0;
                 transform: translateX(-20px);
             }
-
             to {
                 opacity: 1;
                 transform: translateX(0);
@@ -602,7 +585,6 @@
             opacity: 1;
         }
 
-        /* Loader */
         .page-loader {
             position: fixed;
             inset: 0;
@@ -634,7 +616,6 @@
             }
         }
 
-        /* Mobile Overlay */
         .mobile-overlay {
             display: none;
             position: fixed;
@@ -651,7 +632,6 @@
             pointer-events: auto;
         }
 
-        /* Responsive */
         @media (max-width: 1024px) {
             .page-content {
                 padding: 20px;
@@ -723,9 +703,7 @@
             }
         }
 
-        /* Print */
         @media print {
-
             .sidebar,
             .navbar,
             .mobile-overlay,
@@ -746,15 +724,12 @@
 </head>
 
 <body>
-    <!-- Loader -->
     <div class="page-loader" id="pageLoader">
         <div class="loader-spinner"></div>
     </div>
 
-    <!-- Mobile Overlay -->
     <div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileSidebar()"></div>
 
-    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="{{ route('dashboard') }}" class="sidebar-logo">
@@ -777,7 +752,6 @@
 
                 @if (auth()->user()->isAdmin())
                     <div class="menu-section-title">Academic</div>
-
                     <li>
                         <a href="{{ route('schedules.index') }}"
                             class="{{ request()->routeIs('schedules.*') ? 'active' : '' }}">
@@ -808,7 +782,6 @@
                     </li>
 
                     <div class="menu-section-title">Users</div>
-
                     <li>
                         <a href="{{ route('faculty.index') }}"
                             class="{{ request()->routeIs('faculty.*') ? 'active' : '' }}">
@@ -825,7 +798,6 @@
                     </li>
 
                     <div class="menu-section-title">Resources</div>
-
                     <li>
                         <a href="{{ route('rooms.index') }}"
                             class="{{ request()->routeIs('rooms.*') ? 'active' : '' }}">
@@ -856,7 +828,6 @@
                     </li>
 
                     <div class="menu-section-title">Analytics</div>
-
                     <li>
                         <a href="{{ route('reports.index') }}"
                             class="{{ request()->routeIs('reports.*') ? 'active' : '' }}">
@@ -868,7 +839,6 @@
 
                 @if (auth()->user()->isFaculty())
                     <div class="menu-section-title">My Schedule</div>
-
                     <li>
                         <a href="{{ route('schedules.index') }}"
                             class="{{ request()->routeIs('schedules.*') ? 'active' : '' }}">
@@ -880,7 +850,6 @@
 
                 @if (auth()->user()->isStudent())
                     <div class="menu-section-title">My Classes</div>
-
                     <li>
                         <a href="{{ route('enrollments.index') }}"
                             class="{{ request()->routeIs('enrollments.*') ? 'active' : '' }}">
@@ -892,7 +861,6 @@
             </ul>
         </div>
 
-
         <div class="sidebar-footer">
             <div class="sidebar-user">
                 <div class="sidebar-user-avatar">
@@ -900,15 +868,15 @@
                 </div>
                 <div class="sidebar-user-info">
                     <div class="sidebar-user-name">{{ auth()->user()->name }}</div>
-                    <div class="sidebar-user-role">{{ auth()->user()->role->name }}</div>
+                    <div class="sidebar-user-role">
+                        {{ is_object(auth()->user()->role) ? auth()->user()->role->name : auth()->user()->role }}
+                    </div>
                 </div>
             </div>
         </div>
     </aside>
 
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Navbar -->
         <nav class="navbar">
             <div class="navbar-brand">
                 <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle Menu">
@@ -938,7 +906,9 @@
                         </div>
                         <div class="user-info">
                             <span class="user-name">{{ auth()->user()->name }}</span>
-                            <span class="user-role">{{ auth()->user()->role->name }}</span>
+                            <span class="user-role">
+                                {{ is_object(auth()->user()->role) ? auth()->user()->role->name : auth()->user()->role }}
+                            </span>
                         </div>
                         <i class='bx bx-chevron-down' style="font-size: 16px;"></i>
                     </button>
@@ -949,9 +919,7 @@
                                 My Profile
                             </a>
                         </li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
+                        <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
@@ -966,8 +934,6 @@
             </div>
         </nav>
 
-
-        <!-- Content -->
         <main class="page-content">
             @if (session('success'))
                 <div class="alert alert-success">
@@ -994,81 +960,110 @@
                     </button>
                 </div>
             @endif
+           
 
 
             {{ $slot }}
-        </main>
+       </main>
     </div>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // 1. Page Loader Logic
         window.addEventListener('load', () => {
-            setTimeout(() => document.getElementById('pageLoader').classList.add('hidden'), 300);
+            const loader = document.getElementById('pageLoader');
+            if (loader) {
+                setTimeout(() => loader.classList.add('hidden'), 300);
+            }
         });
 
+        // 2. Sidebar Toggle (Desktop)
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            if (sidebar) {
+                sidebar.classList.toggle('collapsed');
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            }
         }
 
+        // 3. Mobile Sidebar Logic
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('mobileOverlay');
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
-            document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+            if (sidebar && overlay) {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+                document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+            }
         }
 
         function closeMobileSidebar() {
-            document.getElementById('sidebar').classList.remove('active');
-            document.getElementById('mobileOverlay').classList.remove('active');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            if (sidebar) sidebar.classList.remove('active');
+            if (overlay) overlay.classList.remove('active');
             document.body.style.overflow = '';
         }
 
-        function toggleDropdown() {
-            document.getElementById('userDropdown').classList.toggle('show');
+        // 4. User Dropdown Logic
+        function toggleDropdown(event) {
+            if (event) event.stopPropagation(); // Prevents immediate closing from the document listener
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) dropdown.classList.toggle('show');
         }
 
+        // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
             const dropdown = document.getElementById('userDropdown');
-            if (!dropdown.contains(e.target)) dropdown.classList.remove('show');
+            // Fixed: Check if dropdown exists and if the click was outside of it
+            if (dropdown && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
         });
 
+        // 5. Responsive Adjustments
         window.addEventListener('resize', () => {
             if (window.innerWidth > 768) closeMobileSidebar();
         });
 
+        // 6. Persistence & Delete Confirmation
         document.addEventListener('DOMContentLoaded', () => {
-            if (window.innerWidth > 768 && localStorage.getItem('sidebarCollapsed') === 'true') {
-                document.getElementById('sidebar').classList.add('collapsed');
+            // Restore Sidebar State
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar && window.innerWidth > 768 && localStorage.getItem('sidebarCollapsed') === 'true') {
+                sidebar.classList.add('collapsed');
             }
-        });
 
-        document.querySelectorAll('.delete-form').forEach(form => {
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "You won't be able to revert this!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc2626',
-                    cancelButtonColor: '#64748b',
-                    confirmButtonText: 'Yes, delete it!'
-                }).then((result) => {
-                    if (result.isConfirmed) form.submit();
-                });
+            // Global Delete Confirmation (SweetAlert2)
+            document.body.addEventListener('submit', (e) => {
+                if (e.target.classList.contains('delete-form')) {
+                    e.preventDefault();
+                    const form = e.target;
+                    
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You won't be able to revert this!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Yes, delete it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) form.submit();
+                    });
+                }
             });
-        });
 
-        document.querySelectorAll('.alert').forEach(alert => {
-            setTimeout(() => alert.remove(), 5000);
+            // 7. Auto-hide Alerts
+            document.querySelectorAll('.alert').forEach(alert => {
+                setTimeout(() => {
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 500); // Smooth removal
+                }, 5000);
+            });
         });
     </script>
 
     @stack('scripts')
 </body>
-
 </html>
