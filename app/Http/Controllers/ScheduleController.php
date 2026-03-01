@@ -12,9 +12,6 @@ use App\Services\ConflictDetectionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Maatwebsite\Excel\Facades\Excel;
-use PhpOffice\PhpWord\PhpWord;
-use PhpOffice\PhpWord\IOFactory;
 
 class ScheduleController extends Controller
 {
@@ -33,8 +30,14 @@ class ScheduleController extends Controller
             'faculty.user',
             'room',
             'semester',
-            'enrollments' // ADD THIS
+            'enrollments'
         ]);
+
+        if (auth()->user()->isFaculty()) {
+            $query->where('faculty_id', auth()->user()->faculty->id);
+        } elseif ($request->filled('faculty_id')) {
+            $query->where('faculty_id', $request->faculty_id);
+        }
 
         if ($request->filled('semester_id')) {
             $query->where('semester_id', $request->semester_id);
@@ -42,10 +45,6 @@ class ScheduleController extends Controller
 
         if ($request->filled('section_id')) {
             $query->where('section_id', $request->section_id);
-        }
-
-        if ($request->filled('faculty_id')) {
-            $query->where('faculty_id', $request->faculty_id);
         }
 
         if ($request->filled('room_id')) {
@@ -56,17 +55,17 @@ class ScheduleController extends Controller
             $query->where('day', $request->day);
         }
 
-        $schedules = $query->orderBy('day')->orderBy('start_time')->paginate(20);
+        $schedules = $query->orderBy(DB::raw("FIELD(day, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')"))
+                           ->orderBy('start_time')
+                           ->paginate(20);
 
         $semesters = Semester::with('academicYear')->where('is_active', true)->get();
         $sections = Section::with('program')->where('is_active', true)->get();
-        $faculty = Faculty::with('user')->where('is_active', true)->get();
+        $faculty = Faculty::with('user')->where('is_active', true)->get(); 
         $rooms = Room::where('is_active', true)->get();
 
         return view('schedules.index', compact('schedules', 'semesters', 'sections', 'faculty', 'rooms'));
     }
-
-
 
     public function create()
     {
@@ -75,7 +74,6 @@ class ScheduleController extends Controller
         $faculty = Faculty::with('user')->where('is_active', true)->get();
         $rooms = Room::where('is_active', true)->get();
         $semesters = Semester::where('is_active', true)->get();
-
         $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         $times = $this->generateTimeSlots();
 
@@ -90,7 +88,7 @@ class ScheduleController extends Controller
             'faculty_id' => 'required|exists:faculty,id',
             'room_id' => 'required|exists:rooms,id',
             'semester_id' => 'required|exists:semesters,id',
-            'days' => 'required|array|min:1', // Changed from 'day' to 'days' array
+            'days' => 'required|array|min:1',
             'days.*' => 'string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
@@ -102,57 +100,32 @@ class ScheduleController extends Controller
         DB::beginTransaction();
         try {
             $days = $validated['days'];
-            unset($validated['days']); // Remove days from validated array
+            unset($validated['days']); 
 
-            $createdSchedules = [];
-            $allConflicts = [];
+            $filter = $this->conflictService->filterAvailableDays($days, $validated);
+            $availableDays = $filter['available'];
+            $skippedDays = $filter['skipped'];
 
-            // Check conflicts for all days BEFORE creating any schedules
-            foreach ($days as $day) {
-                $tempSchedule = new Schedule(array_merge($validated, ['day' => $day]));
-                $tempSchedule->status = 'active';
-
-                $conflicts = $this->conflictService->detectConflicts($tempSchedule);
-
-                if (!empty($conflicts)) {
-                    $allConflicts[$day] = $conflicts;
-                }
-            }
-
-            // If any conflicts found, rollback and show all of them
-            if (!empty($allConflicts)) {
+            if (empty($availableDays)) {
                 DB::rollBack();
                 $errorMessages = [];
-                foreach ($allConflicts as $day => $conflicts) {
+                foreach ($skippedDays as $day => $conflicts) {
                     $errorMessages[] = "<strong>{$day}:</strong> " . implode(', ', $conflicts);
                 }
-                return back()->withErrors(['conflict' => 'Schedule conflicts detected:<br>' . implode('<br>', $errorMessages)])->withInput();
+                return back()->withErrors(['conflict' => 'All selected slots are occupied:<br>' . implode('<br>', $errorMessages)])->withInput();
             }
 
-            // Only create schedules if NO conflicts on ANY day
-            foreach ($days as $day) {
-                $schedule = Schedule::create(array_merge(
-                    $validated,
-                    ['day' => $day, 'status' => 'active']
-                ));
-                $createdSchedules[] = $schedule;
+            foreach ($availableDays as $day) {
+                Schedule::create(array_merge($validated, ['day' => $day, 'status' => 'active']));
             }
 
             DB::commit();
-
-            $count = count($createdSchedules);
-            $message = $count === 1
-                ? 'Schedule created successfully.'
-                : "{$count} schedules created successfully for multiple days.";
-
-            return redirect()->route('schedules.index')->with('success', $message);
+            return redirect()->route('schedules.index')->with('success', "Schedules saved successfully.");
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Failed to create schedule: ' . $e->getMessage()])->withInput();
+            return back()->withErrors(['error' => 'Error: ' . $e->getMessage()])->withInput();
         }
     }
-
-
 
     public function edit(Schedule $schedule)
     {
@@ -161,7 +134,6 @@ class ScheduleController extends Controller
         $faculty = Faculty::with('user')->where('is_active', true)->get();
         $rooms = Room::where('is_active', true)->get();
         $semesters = Semester::where('is_active', true)->get();
-
         $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         $times = $this->generateTimeSlots();
 
@@ -187,22 +159,21 @@ class ScheduleController extends Controller
 
         DB::beginTransaction();
         try {
-            $schedule->update($validated);
-
-            // Check for conflicts (excluding current schedule)
-            $conflicts = $this->conflictService->detectConflicts($schedule, $schedule->id);
+            $tempSchedule = clone $schedule;
+            $tempSchedule->fill($validated);
+            $conflicts = $this->conflictService->detectConflicts($tempSchedule, $schedule->id);
 
             if (!empty($conflicts)) {
                 DB::rollBack();
-                return back()->withErrors(['conflict' => 'Schedule conflicts detected: ' . implode(', ', $conflicts)])->withInput();
+                return back()->withErrors(['conflict' => 'Update failed due to conflicts.'])->withInput();
             }
 
+            $schedule->update($validated);
             DB::commit();
-
             return redirect()->route('schedules.index')->with('success', 'Schedule updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Failed to update schedule: ' . $e->getMessage()])->withInput();
+            return back()->withErrors(['error' => 'Update failed: ' . $e->getMessage()])->withInput();
         }
     }
 
@@ -212,58 +183,125 @@ class ScheduleController extends Controller
             $schedule->delete();
             return redirect()->route('schedules.index')->with('success', 'Schedule deleted successfully.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to delete schedule: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to delete schedule.']);
         }
     }
 
-    public function checkAvailability(Request $request)
+    public function viewStudents(Schedule $schedule)
     {
-        $validated = $request->validate([
-            'faculty_id' => 'nullable|exists:faculty,id',
-            'room_id' => 'nullable|exists:rooms,id',
-            'day' => 'required|string',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i',
-            'semester_id' => 'required|exists:semesters,id',
-            'exclude_id' => 'nullable|exists:schedules,id',
-        ]);
+        $schedule->load(['enrollments.student.user', 'course', 'section', 'faculty.user', 'room', 'semester']);
+        return view('schedules.students', compact('schedule'));
+    }
 
-        $conflicts = [];
+    public function downloadFullPdf()
+    {
+        $facultyId = auth()->user()->faculty->id;
+        $schedules = Schedule::with(['course', 'section', 'room'])
+            ->where('faculty_id', $facultyId)
+            ->orderBy(DB::raw("FIELD(day, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')"))
+            ->orderBy('start_time')->get();
 
-        $query = Schedule::where('semester_id', $validated['semester_id'])
-            ->where('day', $validated['day'])
-            ->where('status', 'active')
-            ->where(function ($q) use ($validated) {
-                $q->whereBetween('start_time', [$validated['start_time'], $validated['end_time']])
-                    ->orWhereBetween('end_time', [$validated['start_time'], $validated['end_time']])
-                    ->orWhere(function ($q2) use ($validated) {
-                        $q2->where('start_time', '<=', $validated['start_time'])
-                            ->where('end_time', '>=', $validated['end_time']);
-                    });
-            });
+        $html = $this->generateFullScheduleHtml($schedules, auth()->user()->name);
+        return Pdf::loadHTML($html)->setPaper('a4', 'portrait')->download('Full-Schedule-'.auth()->user()->name.'.pdf');
+    }
 
-        if (isset($validated['exclude_id'])) {
-            $query->where('id', '!=', $validated['exclude_id']);
+    public function downloadFullExcel()
+    {
+        $facultyId = auth()->user()->faculty->id;
+        $schedules = Schedule::with(['course', 'section', 'room'])
+            ->where('faculty_id', $facultyId)
+            ->orderBy(DB::raw("FIELD(day, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')"))
+            ->orderBy('start_time')->get();
+
+        $filename = "Full-Schedule-".auth()->user()->name.".csv";
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="'.$filename.'"');
+        
+        $handle = fopen('php://output', 'w');
+        fputcsv($handle, ['AKLAN CATHOLIC COLLEGE - FULL SCHEDULE']);
+        fputcsv($handle, ['Faculty:', auth()->user()->name]);
+        fputcsv($handle, []);
+        fputcsv($handle, ['Day', 'Time', 'Course', 'Section', 'Room']);
+
+        foreach($schedules as $sched) {
+            fputcsv($handle, [
+                $sched->day,
+                date('h:i A', strtotime($sched->start_time)) . ' - ' . date('h:i A', strtotime($sched->end_time)),
+                $sched->course->code,
+                $sched->section->name,
+                $sched->room->code
+            ]);
         }
+        fclose($handle);
+        exit;
+    }
 
-        if (isset($validated['faculty_id'])) {
-            $facultyConflict = (clone $query)->where('faculty_id', $validated['faculty_id'])->exists();
-            if ($facultyConflict) {
-                $conflicts[] = 'Faculty is not available at this time';
+    public function downloadFullWord()
+    {
+        $facultyId = auth()->user()->faculty->id;
+        $schedules = Schedule::with(['course', 'section', 'room'])
+            ->where('faculty_id', $facultyId)
+            ->orderBy(DB::raw("FIELD(day, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')"))
+            ->orderBy('start_time')->get();
+
+        $html = $this->generateFullScheduleHtml($schedules, auth()->user()->name, true);
+        
+        $filename = "Full-Schedule-".auth()->user()->name.".doc";
+        $headers = [
+            "Content-type" => "application/vnd.ms-word",
+            "Content-Disposition" => "attachment;Filename=".$filename
+        ];
+        return response($html, 200, $headers);
+    }
+
+    private function generateFullScheduleHtml($schedules, $name, $forWord = false)
+    {
+        $logoImg = "";
+        
+        if ($forWord) {
+            // Use live URL for Word to avoid Base64 text rendering issues
+            $logoUrl = asset('assets/logo.png'); 
+            $logoImg = "<img src='{$logoUrl}' width='80' height='80'>";
+        } else {
+            // Use Base64 for PDF as it is more reliable for local file rendering in DomPDF
+            $path = public_path('assets/logo.png'); 
+            if (file_exists($path)) {
+                $type = pathinfo($path, PATHINFO_EXTENSION);
+                $data = file_get_contents($path);
+                $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                $logoImg = "<img src='{$base64}' style='height: 80px;'>";
             }
         }
 
-        if (isset($validated['room_id'])) {
-            $roomConflict = (clone $query)->where('room_id', $validated['room_id'])->exists();
-            if ($roomConflict) {
-                $conflicts[] = 'Room is not available at this time';
-            }
+        $rows = '';
+        foreach($schedules as $sched) {
+            $rows .= "<tr>
+                <td style='border:1px solid #000; padding:8px;'>{$sched->day}</td>
+                <td style='border:1px solid #000; padding:8px;'>".date('h:i A', strtotime($sched->start_time))." - ".date('h:i A', strtotime($sched->end_time))."</td>
+                <td style='border:1px solid #000; padding:8px;'>{$sched->course->code}</td>
+                <td style='border:1px solid #000; padding:8px;'>{$sched->section->name}</td>
+                <td style='border:1px solid #000; padding:8px;'>{$sched->room->code}</td>
+            </tr>";
         }
 
-        return response()->json([
-            'available' => empty($conflicts),
-            'conflicts' => $conflicts,
-        ]);
+        return "
+            <div style='text-align:center; font-family:Arial;'>
+                {$logoImg}
+                <h2 style='margin:5px 0;'>AKLAN CATHOLIC COLLEGE</h2>
+                <p style='margin:0; font-style: italic; color: #2e7d32;'>Pro Deo Et Patria</p>
+                <h3 style='margin:5px 0;'>FACULTY CLASS SCHEDULE</h3>
+                <p style='margin:15px 0; text-align:left;'><strong>Name:</strong> {$name}</p>
+            </div>
+            <table style='width:100%; border-collapse:collapse; font-family:Arial; font-size:12px;'>
+                <thead><tr style='background:#f2f2f2;'>
+                    <th style='border:1px solid #000; padding:8px;'>Day</th>
+                    <th style='border:1px solid #000; padding:8px;'>Time</th>
+                    <th style='border:1px solid #000; padding:8px;'>Course</th>
+                    <th style='border:1px solid #000; padding:8px;'>Section</th>
+                    <th style='border:1px solid #000; padding:8px;'>Room</th>
+                </tr></thead>
+                <tbody>{$rows}</tbody>
+            </table>";
     }
 
     private function generateTimeSlots(): array
@@ -275,177 +313,5 @@ class ScheduleController extends Controller
             }
         }
         return $times;
-    }
-    public function viewStudents(Schedule $schedule)
-    {
-        $schedule->load([
-            'enrollments.student.user', // Load enrollments instead of section.students
-            'course',
-            'faculty.user',
-            'room',
-            'semester.academicYear'
-        ]);
-
-        return view('schedules.students', compact('schedule'));
-    }
-
-
-    // Students List PDF Export
-    public function studentsListPdf(Schedule $schedule)
-    {
-        $schedule->load([
-            'enrollments.student.user',
-            'course',
-            'faculty.user',
-            'room',
-            'semester.academicYear',
-            'section'
-        ]);
-
-        $pdf = Pdf::loadView('schedules.students-pdf', compact('schedule'));
-        return $pdf->download('enrolled-students-' . $schedule->course->code . '-' . $schedule->day . '.pdf');
-    }
-
-    // Students List Excel Export
-    public function studentsListExcel(Schedule $schedule)
-    {
-        $schedule->load([
-            'enrollments.student.user',
-            'course',
-            'section'
-        ]);
-
-        return Excel::download(
-            new \App\Exports\ScheduleStudentsExport($schedule->id),
-            'enrolled-students-' . $schedule->course->code . '-' . $schedule->day . '.xlsx'
-        );
-    }
-
-    // Students List Word Export
-    public function studentsListWord(Schedule $schedule)
-    {
-        $schedule->load([
-            'enrollments.student.user',
-            'course',
-            'faculty.user',
-            'room',
-            'semester.academicYear',
-            'section'
-        ]);
-
-        $phpWord = new PhpWord();
-
-        $properties = $phpWord->getDocInfo();
-        $properties->setCreator('Aklan Catholic College');
-        $properties->setTitle('Enrolled Students List');
-
-        $section = $phpWord->addSection();
-
-        // Add Logo
-        $logoPath = public_path('assets/logo.png');
-        if (file_exists($logoPath)) {
-            $section->addImage(
-                $logoPath,
-                [
-                    'width' => 80,
-                    'height' => 80,
-                    'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER
-                ]
-            );
-            $section->addTextBreak(0.5);
-        }
-
-        // Header
-        $section->addText(
-            'AKLAN CATHOLIC COLLEGE',
-            ['name' => 'Arial', 'size' => 18, 'bold' => true, 'color' => '1e40af'],
-            ['alignment' => 'center']
-        );
-        $section->addText(
-            'Pro Deo Et Patria',
-            ['name' => 'Arial', 'size' => 10, 'italic' => true, 'color' => '059669'],
-            ['alignment' => 'center']
-        );
-
-        $section->addTextBreak(1);
-
-        $section->addText(
-            'ENROLLED STUDENTS LIST',
-            ['name' => 'Arial', 'size' => 16, 'bold' => true, 'color' => '059669'],
-            ['alignment' => 'center']
-        );
-
-        $section->addTextBreak(1);
-
-        // Schedule Info
-        $infoTable = $section->addTable(['borderSize' => 0, 'cellMargin' => 50]);
-        $infoTable->addRow();
-        $infoTable->addCell(2000)->addText('Course:', ['bold' => true, 'size' => 10]);
-        $infoTable->addCell(4000)->addText($schedule->course->code . ' - ' . $schedule->course->name, ['size' => 10]);
-
-        $infoTable->addRow();
-        $infoTable->addCell(2000)->addText('Section:', ['bold' => true, 'size' => 10]);
-        $infoTable->addCell(4000)->addText($schedule->section->name, ['size' => 10]);
-
-        $infoTable->addRow();
-        $infoTable->addCell(2000)->addText('Faculty:', ['bold' => true, 'size' => 10]);
-        $infoTable->addCell(4000)->addText($schedule->faculty->user->name, ['size' => 10]);
-
-        $infoTable->addRow();
-        $infoTable->addCell(2000)->addText('Schedule:', ['bold' => true, 'size' => 10]);
-        $infoTable->addCell(4000)->addText(
-            $schedule->day . ' ' .
-                date('g:i A', strtotime($schedule->start_time)) . ' - ' .
-                date('g:i A', strtotime($schedule->end_time)),
-            ['size' => 10]
-        );
-
-        $infoTable->addRow();
-        $infoTable->addCell(2000)->addText('Room:', ['bold' => true, 'size' => 10]);
-        $infoTable->addCell(4000)->addText($schedule->room->code, ['size' => 10]);
-
-        $section->addTextBreak(1);
-
-        // Students Table
-        $section->addText(
-            'Total Enrolled: ' . $schedule->enrollments->count() . ' / ' . $schedule->max_students,
-            ['name' => 'Arial', 'size' => 11, 'bold' => true]
-        );
-        $section->addTextBreak(0.5);
-
-        $table = $section->addTable(['borderSize' => 6, 'cellMargin' => 80]);
-
-        // Header row
-        $table->addRow();
-        $table->addCell(1500)->addText('Student ID', ['bold' => true, 'size' => 9]);
-        $table->addCell(3000)->addText('Name', ['bold' => true, 'size' => 9]);
-        $table->addCell(2500)->addText('Email', ['bold' => true, 'size' => 9]);
-        $table->addCell(1000)->addText('Year Level', ['bold' => true, 'size' => 9]);
-        $table->addCell(1500)->addText('Enrolled Date', ['bold' => true, 'size' => 9]);
-
-        // Data rows
-        foreach ($schedule->enrollments as $enrollment) {
-            $table->addRow();
-            $table->addCell(1500)->addText($enrollment->student->student_id, ['size' => 9]);
-            $table->addCell(3000)->addText($enrollment->student->user->name, ['size' => 9]);
-            $table->addCell(2500)->addText($enrollment->student->user->email, ['size' => 9]);
-            $table->addCell(1000)->addText('Year ' . $enrollment->student->year_level, ['size' => 9]);
-            $table->addCell(1500)->addText(
-                $enrollment->enrolled_at ? $enrollment->enrolled_at->format('M d, Y') : 'N/A',
-                ['size' => 9]
-            );
-        }
-
-        $filename = 'enrolled-students-' . $schedule->course->code . '-' . $schedule->day . '.docx';
-        $tempFile = storage_path('app/temp/' . $filename);
-
-        if (!file_exists(storage_path('app/temp'))) {
-            mkdir(storage_path('app/temp'), 0755, true);
-        }
-
-        $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
-        $objWriter->save($tempFile);
-
-        return response()->download($tempFile)->deleteFileAfterSend(true);
     }
 }

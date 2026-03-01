@@ -9,18 +9,12 @@
             max-width: 1400px;
             margin: 0 auto;
             animation: fadeIn 0.4s ease;
+            position: relative;
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .page-actions {
@@ -29,6 +23,7 @@
             align-items: center;
             margin-bottom: 20px;
             gap: 16px;
+            flex-wrap: wrap;
         }
 
         .page-actions h1 {
@@ -39,6 +34,39 @@
             margin: 0;
         }
 
+        /* --- DOWNLOAD BUTTONS STYLE --- */
+        .download-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-download {
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white !important;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-pdf { background-color: #e11d48; }   /* Solid Red */
+        .btn-excel { background-color: #10b981; } /* Solid Green */
+        .btn-word { background-color: #2563eb; }  /* Solid Blue */
+
+        .btn-download:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- CREATE BUTTON --- */
         .create-btn {
             background: var(--acc-primary);
             border: none;
@@ -54,29 +82,37 @@
             text-decoration: none;
         }
 
-        .create-btn:hover {
-            background: var(--acc-light-blue);
-            color: white;
-        }
+        .create-btn:hover { background: var(--acc-light-blue); color: white; }
 
-        .create-btn i {
-            font-size: 18px;
-        }
-
-        /* Minimalist Filter */
+        /* --- FILTER SECTION --- */
         .filter-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 20px;
+            padding: 24px;
             margin-bottom: 20px;
+            position: relative;
+            z-index: 10;
         }
+
+        .filter-grid-layout {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .filter-column {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .filter-group { margin-bottom: 15px; }
 
         .filter-label {
             font-size: 12px;
             font-weight: 600;
             color: var(--text-tertiary);
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             display: block;
         }
 
@@ -84,322 +120,171 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 10px 12px;
-            font-size: 13px;
+            font-size: 14px;
             color: var(--text-primary);
-            transition: all 0.2s;
-        }
-
-        .filter-select:focus {
-            border-color: var(--acc-primary);
-            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
-            outline: none;
+            width: 100%;
+            background-color: white;
         }
 
         .filter-btn {
             background: var(--acc-primary);
             border: none;
             border-radius: 8px;
-            padding: 10px 20px;
+            padding: 12px;
             color: white;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            transition: all 0.2s;
+            gap: 8px;
             width: 100%;
-            margin-top: 20px;
-        }
-
-        .filter-btn:hover {
-            background: var(--acc-light-blue);
-        }
-
-        .filter-btn i {
-            font-size: 16px;
-        }
-
-        /* Minimalist Table */
-        .table-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
-        .schedules-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .schedules-table thead {
-            background: var(--bg-primary);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .schedules-table thead th {
-            padding: 12px 16px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-tertiary);
-            text-align: left;
-            white-space: nowrap;
-        }
-
-        .schedules-table tbody td {
-            padding: 16px;
-            font-size: 13px;
-            color: var(--text-primary);
-            border-bottom: 1px solid var(--border-light);
-        }
-
-        .schedules-table tbody tr {
-            transition: background 0.2s;
-        }
-
-        .schedules-table tbody tr:hover {
-            background: var(--bg-primary);
-        }
-
-        .schedules-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Course Badge */
-        .course-badge {
-            background: var(--acc-primary);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 12px;
-            display: inline-block;
-        }
-
-        /* Status Badge */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .status-badge.active {
-            background: #f0fdf4;
-            color: #059669;
-        }
-
-        .status-badge.inactive {
-            background: #f9fafb;
-            color: #6b7280;
-        }
-
-        .status-badge i {
-            font-size: 12px;
-        }
-
-        /* Action Buttons */
-        .action-buttons {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        .action-btn {
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            border: none;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            text-decoration: none;
-            white-space: nowrap;
             cursor: pointer;
         }
 
-        .action-btn.students {
-            background: #dbeafe;
-            color: #1e40af;
+        /* --- TABLE STYLES --- */
+        .table-card { 
+            background: var(--bg-secondary); 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px; 
+            overflow: hidden;
+            position: relative;
+            z-index: 5;
         }
 
-        .action-btn.students:hover {
-            background: #bfdbfe;
+        .table-wrapper { overflow-x: auto; }
+        .schedules-table { width: 100%; border-collapse: collapse; }
+        .schedules-table thead { background: var(--bg-primary); border-bottom: 1px solid var(--border-color); }
+        .schedules-table thead th { padding: 14px 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-tertiary); text-align: left; }
+        .schedules-table tbody td { padding: 16px; font-size: 13px; color: var(--text-primary); border-bottom: 1px solid var(--border-light); }
+        
+        /* Badges */
+        .course-badge { background: var(--acc-primary); color: white; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 12px; }
+        .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+        .status-badge.active { background: #f0fdf4; color: #059669; }
+        .status-badge.inactive { background: #f9fafb; color: #6b7280; }
+
+        /* Action Buttons Row */
+        .action-buttons { 
+            display: flex; 
+            gap: 8px; 
+            align-items: center;
+            pointer-events: auto !important;
         }
 
-        .action-btn.edit {
-            background: #fef3c7;
-            color: #92400e;
+        .action-btn { 
+            padding: 6px 14px; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            font-weight: 600; 
+            text-decoration: none; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+            border: none; 
+            transition: all 0.2s;
+            cursor: pointer !important;
         }
 
-        .action-btn.edit:hover {
-            background: #fde68a;
-        }
+        .action-btn.students { background: #dbeafe; color: #1e40af; }
+        .action-btn.edit { background: #fef3c7; color: #92400e; }
+        .action-btn.delete { background: #fee2e2; color: #991b1b; }
+        
+        .action-btn:hover { transform: translateY(-1px); filter: brightness(0.95); }
 
-        .action-btn.delete {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .action-btn.delete:hover {
-            background: #fecaca;
-        }
-
-        .action-btn i {
-            font-size: 14px;
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 48px 20px;
-        }
-
-        .empty-state i {
-            font-size: 48px;
-            color: var(--text-tertiary);
-            opacity: 0.3;
-            margin-bottom: 16px;
-        }
-
-        .empty-state-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-        }
-
-        .empty-state-text {
-            font-size: 13px;
-            color: var(--text-tertiary);
-        }
-
-        /* Pagination */
-        .pagination-wrapper {
-            padding: 16px;
-            border-top: 1px solid var(--border-light);
-            display: flex;
-            justify-content: center;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .page-actions {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .page-actions h1 {
-                font-size: 20px;
-            }
-
-            .create-btn {
-                justify-content: center;
-            }
-
-            .filter-card {
-                padding: 16px;
-            }
-
-            .schedules-table thead th {
-                padding: 10px 12px;
-                font-size: 10px;
-            }
-
-            .schedules-table tbody td {
-                padding: 12px;
-                font-size: 12px;
-            }
-
-            .action-buttons {
-                flex-direction: column;
-            }
-
-            .action-btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
     </style>
 
     <div class="schedules-container">
-        <!-- Header -->
         <div class="page-actions">
             <h1>Class Schedules</h1>
-            @if (auth()->user()->isAdmin())
-                <a href="{{ route('schedules.create') }}" class="create-btn">
-                    <i class='bx bx-plus'></i>
-                    New Schedule
-                </a>
-            @endif
+            
+            <div class="d-flex align-items-center gap-3">
+                {{-- DITO BINAGO: Faculty lang ang makakakita ng download buttons --}}
+                @if (auth()->user()->isFaculty())
+                    <div class="download-group">
+                        <a href="{{ route('full.pdf') }}" class="btn-download btn-pdf">
+                            <i class='bx bxs-file-pdf'></i> PDF
+                        </a>
+                        <a href="{{ route('full.excel') }}" class="btn-download btn-excel">
+                            <i class='bx bxs-file-export'></i> Excel
+                        </a>
+                        <a href="{{ route('full.word') }}" class="btn-download btn-word">
+                            <i class='bx bxs-file-doc'></i> Word
+                        </a>
+                    </div>
+                @endif
+
+                @if (auth()->user()->isAdmin())
+                    <a href="{{ route('schedules.create') }}" class="create-btn">
+                        <i class='bx bx-plus'></i> New Schedule
+                    </a>
+                @endif
+            </div>
         </div>
 
-        <!-- Filters -->
+        {{-- Filter Section --}}
         <div class="filter-card">
             <form method="GET" action="{{ route('schedules.index') }}">
-                <div class="row g-3">
-                    <div class="col-12 col-md-6 col-lg-3">
-                        <label class="filter-label">Semester</label>
-                        <select name="semester_id" class="form-select filter-select">
-                            <option value="">All Semesters</option>
-                            @foreach ($semesters as $semester)
-                                <option value="{{ $semester->id }}"
-                                    {{ request('semester_id') == $semester->id ? 'selected' : '' }}>
-                                    {{ $semester->name }} ({{ $semester->academicYear->code }})
-                                </option>
-                            @endforeach
-                        </select>
+                <div class="filter-grid-layout">
+                    <div class="filter-column">
+                        <div class="filter-group">
+                            <label class="filter-label">Semester</label>
+                            <select name="semester_id" class="form-select filter-select">
+                                <option value="">All Semesters</option>
+                                @foreach ($semesters as $semester)
+                                    <option value="{{ $semester->id }}" {{ request('semester_id') == $semester->id ? 'selected' : '' }}>
+                                        {{ $semester->name }} ({{ $semester->academicYear->code }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Section</label>
+                            <select name="section_id" class="form-select filter-select">
+                                <option value="">All Sections</option>
+                                @foreach ($sections as $section)
+                                    <option value="{{ $section->id }}" {{ request('section_id') == $section->id ? 'selected' : '' }}>
+                                        {{ $section->name }} - {{ $section->program->code }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="col-12 col-md-6 col-lg-3">
-                        <label class="filter-label">Section</label>
-                        <select name="section_id" class="form-select filter-select">
-                            <option value="">All Sections</option>
-                            @foreach ($sections as $section)
-                                <option value="{{ $section->id }}"
-                                    {{ request('section_id') == $section->id ? 'selected' : '' }}>
-                                    {{ $section->name }} - {{ $section->program->code }}
-                                </option>
-                            @endforeach
-                        </select>
+                    <div class="filter-column">
+                        <div class="filter-group">
+                            <label class="filter-label">Faculty</label>
+                            <select name="faculty_id" class="form-select filter-select">
+                                <option value="">All Faculty</option>
+                                @foreach ($faculty as $f)
+                                    <option value="{{ $f->id }}" {{ request('faculty_id') == $f->id ? 'selected' : '' }}>
+                                        {{ $f->user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Room</label>
+                            <select name="room_id" class="form-select filter-select">
+                                <option value="">All Rooms</option>
+                                @foreach ($rooms as $room)
+                                    <option value="{{ $room->id }}" {{ request('room_id') == $room->id ? 'selected' : '' }}>
+                                        {{ $room->code }} - {{ $room->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="col-12 col-md-6 col-lg-3">
-                        <label class="filter-label">Room</label>
-                        <select name="room_id" class="form-select filter-select">
-                            <option value="">All Rooms</option>
-                            @foreach ($rooms as $room)
-                                <option value="{{ $room->id }}"
-                                    {{ request('room_id') == $room->id ? 'selected' : '' }}>
-                                    {{ $room->code }} - {{ $room->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="col-12 col-md-6 col-lg-3">
-                        <button type="submit" class="filter-btn">
-                            <i class='bx bx-search'></i>
-                            Apply Filters
-                        </button>
-                    </div>
+                <div class="button-row">
+                    <button type="submit" class="filter-btn">
+                        <i class='bx bx-search'></i> Apply Filters
+                    </button>
                 </div>
             </form>
         </div>
 
-        <!-- Table -->
         <div class="table-card">
             <div class="table-wrapper">
                 <table class="schedules-table">
@@ -421,9 +306,7 @@
                     <tbody>
                         @forelse($schedules as $schedule)
                             <tr>
-                                <td>
-                                    <span class="course-badge">{{ $schedule->course->code }}</span>
-                                </td>
+                                <td><span class="course-badge">{{ $schedule->course->code }}</span></td>
                                 <td><strong>{{ $schedule->section->name }}</strong></td>
                                 <td>{{ $schedule->faculty->user->name }}</td>
                                 <td>{{ $schedule->room->code }}</td>
@@ -432,43 +315,28 @@
                                     {{ date('g:i A', strtotime($schedule->start_time)) }} -
                                     {{ date('g:i A', strtotime($schedule->end_time)) }}
                                 </td>
+                                <td><strong>{{ $schedule->enrollments->count() }}</strong>/{{ $schedule->max_students }}</td>
                                 <td>
-                                    <strong>{{ $schedule->enrollments->count() }}</strong>/{{ $schedule->max_students }}
-                                </td>
-
-
-                                <td>
-                                    <span
-                                        class="status-badge {{ $schedule->status === 'active' ? 'active' : 'inactive' }}">
-                                        <i
-                                            class='bx bx-{{ $schedule->status === 'active' ? 'check-circle' : 'x-circle' }}'></i>
+                                    <span class="status-badge {{ $schedule->status === 'active' ? 'active' : 'inactive' }}">
+                                        <i class='bx bx-{{ $schedule->status === 'active' ? 'check-circle' : 'x-circle' }}'></i>
                                         {{ ucfirst($schedule->status) }}
                                     </span>
                                 </td>
                                 @if (auth()->user()->isAdmin() || auth()->user()->isFaculty())
                                     <td>
                                         <div class="action-buttons">
-                                            <!-- View Students Button -->
-                                            <a href="{{ route('schedules.students', $schedule) }}"
-                                                class="action-btn students">
-                                                <i class='bx bx-user'></i>
-                                                Students
+                                            <a href="{{ route('schedules.students', $schedule->id) }}" class="action-btn students">
+                                                <i class='bx bx-user'></i> Students
                                             </a>
 
                                             @if (auth()->user()->isAdmin())
-                                                <a href="{{ route('schedules.edit', $schedule) }}"
-                                                    class="action-btn edit">
-                                                    <i class='bx bx-edit'></i>
-                                                    Edit
+                                                <a href="{{ route('schedules.edit', $schedule->id) }}" class="action-btn edit">
+                                                    <i class='bx bx-edit'></i> Edit
                                                 </a>
-                                                <form action="{{ route('schedules.destroy', $schedule) }}"
-                                                    method="POST" style="display: inline;">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="action-btn delete"
-                                                        onclick="return confirm('Are you sure you want to delete this schedule?')">
+                                                <form action="{{ route('schedules.destroy', $schedule->id) }}" method="POST" style="display: inline;">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="action-btn delete" onclick="return confirm('Delete schedule?')">
                                                         <i class='bx bx-trash'></i>
-                                                        Delete
                                                     </button>
                                                 </form>
                                             @endif
@@ -478,13 +346,10 @@
                             </tr>
                         @empty
                             <tr>
-                                <td
-                                    colspan="{{ auth()->user()->isAdmin() || auth()->user()->isFaculty() ? '9' : '8' }}">
+                                <td colspan="9" class="text-center py-5">
                                     <div class="empty-state">
-                                        <i class='bx bx-calendar-x'></i>
+                                        <i class='bx bx-calendar-x' style="font-size: 48px; opacity: 0.3;"></i>
                                         <div class="empty-state-title">No Schedules Found</div>
-                                        <div class="empty-state-text">Try adjusting filters or create a new schedule
-                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -492,9 +357,8 @@
                     </tbody>
                 </table>
             </div>
-
             @if ($schedules->hasPages())
-                <div class="pagination-wrapper">
+                <div class="pagination-wrapper" style="padding: 20px;">
                     {{ $schedules->links() }}
                 </div>
             @endif

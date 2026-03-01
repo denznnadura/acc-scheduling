@@ -4,243 +4,174 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - ACC</title>
-    <style> body, html {
-
+    <style>
+        body, html {
             margin: 0;
-
             padding: 0;
-
-            height: 100%;
-
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-
-            overflow: hidden; /* No scroll */
-
+            min-height: 100vh;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
-
-
 
         .bg-container {
-
-            background: linear-gradient(135deg, #1e40af 0%, #0891b2 100%);
-
-            height: 100vh;
-
+            /* Admin Theme: Deep Blue to Dark Red Gradient */
+            background: linear-gradient(135deg, #1e40af 0%, #991b1b 100%);
+            min-height: 100vh;
             display: flex;
-
             align-items: center;
-
             justify-content: center;
-
+            padding: 20px;
+            box-sizing: border-box;
         }
-
-
 
         .login-card {
-
             background: white;
-
-            width: 90%;
-
-            max-width: 420px; /* Mas malapad ng kunti para sa laptop */
-
-            padding: 30px 40px;
-
-            border-radius: 20px;
-
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-
+            width: 100%;
+            max-width: 420px; 
+            padding: clamp(25px, 5vw, 40px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             text-align: center;
-
+            box-sizing: border-box;
         }
-
-
 
         .logo {
-
-            height: 65px;
-
-            margin-bottom: 10px;
-
+            height: clamp(50px, 10vw, 65px);
+            margin-bottom: 12px;
         }
-
-
 
         h2 {
-
             margin: 0;
-
-            font-size: 22px;
-
+            font-size: clamp(18px, 4vw, 22px);
             font-weight: 800;
-
             color: #1f2937;
-
         }
 
-
-
-        .role-admin { color: #dc2626; }
-
-        .role-user { color: #2563eb; }
-
-
+        .role-admin { color: #dc2626; } /* Red accent for Admin */
 
         .subtitle {
-
             font-size: 10px;
-
             color: #9ca3af;
-
             text-transform: uppercase;
-
-            letter-spacing: 3px;
-
+            letter-spacing: 2px;
             margin-bottom: 25px;
-
             font-weight: bold;
-
         }
-
-
 
         .form-group {
-
             text-align: left;
-
-            margin-bottom: 15px;
-
+            margin-bottom: 18px;
         }
-
-
 
         label {
-
             display: block;
-
             font-size: 11px;
-
-            font-weight: bold;
-
+            font-weight: 700;
             color: #4b5563;
-
-            margin-bottom: 5px;
-
+            margin-bottom: 6px;
             text-transform: uppercase;
-
-            padding-left: 5px;
-
+            padding-left: 2px;
         }
 
+        /* Password Wrapper for Lash Icon */
+        .password-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
 
-
-        input[type="email"], input[type="password"] {
-
+        input[type="email"], input[type="password"], input[type="text"] {
             width: 100%;
-
-            padding: 10px 15px;
-
-            border: 1px solid #d1d5db;
-
-            border-radius: 10px;
-
+            padding: 12px 15px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 12px;
             box-sizing: border-box;
-
             font-size: 14px;
-
             outline: none;
-
-            transition: border 0.3s;
-
+            transition: all 0.3s ease;
+            background-color: #f9fafb;
         }
 
-
+        input#adminPassword {
+            padding-right: 45px;
+        }
 
         input:focus {
-
-            border-color: #2563eb;
-
+            border-color: #dc2626; /* Admin Red Focus */
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
         }
 
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
 
+        .toggle-password:hover { color: #dc2626; }
 
         .options {
-
             display: flex;
-
             justify-content: space-between;
-
             align-items: center;
-
-            font-size: 11px;
-
-            margin-bottom: 20px;
-
+            font-size: 12px;
+            margin-bottom: 25px;
             color: #6b7280;
-
+            gap: 10px;
         }
 
-
+        @media (max-width: 350px) {
+            .options { flex-direction: column; align-items: flex-start; }
+        }
 
         .btn-submit {
-
             width: 100%;
-
-            padding: 12px;
-
+            padding: 14px;
             border: none;
-
-            border-radius: 10px;
-
+            border-radius: 12px;
             color: white;
-
             font-weight: bold;
-
             text-transform: uppercase;
-
             letter-spacing: 1px;
-
             cursor: pointer;
-
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-
-            transition: 0.3s;
-
+            box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.3);
+            transition: all 0.3s ease;
+            background-color: #dc2626;
         }
 
-
-
-        .btn-admin { background-color: #dc2626; }
-
-        .btn-admin:hover { background-color: #b91c1c; }
-
-
-
-        .btn-user { background-color: #2563eb; }
-
-        .btn-user:hover { background-color: #1d4ed8; }
-
-
+        .btn-submit:hover {
+            background-color: #b91c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(220, 38, 38, 0.4);
+        }
 
         .back-link {
-
-            display: block;
-
-            margin-top: 20px;
-
+            display: inline-block;
+            margin-top: 25px;
             font-size: 11px;
-
             color: #9ca3af;
-
             text-decoration: none;
-
-            font-weight: bold;
-
+            font-weight: 700;
+            transition: color 0.2s;
         }
 
+        .back-link:hover { color: #4b5563; }
 
-
-        .back-link:hover { color: #4b5563; }</style>
+        .error-msg {
+            color: #ef4444;
+            font-size: 11px;
+            margin-top: 5px;
+            display: block;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body>
 <div class="bg-container">
@@ -250,34 +181,68 @@
         <h2><span class="role-admin">🛡️ ADMIN PORTAL</span></h2>
         <div class="subtitle">Aklan Catholic College</div>
 
-       <form method="POST" action="{{ route('admin.login.submit') }}">
-    @csrf
-    <div class="form-group">
-        <label>Admin Email</label>
-        <input type="email" name="email" value="{{ old('email') }}" required autofocus>
-        @if($errors->has('email'))
-            <span style="color:red; font-size:10px;">{{ $errors->first('email') }}</span>
-        @endif
-    </div>
+        <form method="POST" action="{{ route('admin.login.submit') }}">
+            @csrf
+            <div class="form-group">
+                <label>Admin Email</label>
+                <input type="email" name="email" value="{{ old('email') }}" placeholder="admin@acc.edu.ph" required autofocus>
+                @if($errors->has('email'))
+                    <span class="error-msg">{{ $errors->first('email') }}</span>
+                @endif
+            </div>
 
-    <div class="form-group">
-        <label>Password</label>
-        <input type="password" name="password" required>
-    </div>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="password-wrapper">
+                    <input type="password" name="password" id="adminPassword" placeholder="••••••••" required>
+                    <button type="button" class="toggle-password" id="toggleAdminBtn">
+                        <svg id="adminLashIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
 
-    <div class="options">
-        <label style="display: flex; align-items: center; cursor: pointer; text-transform: none;">
-            <input type="checkbox" name="remember" style="margin-right: 5px;"> Remember me
-        </label>
-        @if (Route::has('password.request'))
-            <a href="{{ route('password.request') }}" style="color: #2563eb; text-decoration: none; font-style: italic;">Forgot Password?</a>
-        @endif
-    </div>
+            <div class="options">
+                <label style="display: flex; align-items: center; cursor: pointer; text-transform: none; font-weight: 500;">
+                    <input type="checkbox" name="remember" style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;"> Remember me
+                </label>
+                @if (Route::has('password.request'))
+                    <a href="{{ route('password.request') }}" style="color: #dc2626; text-decoration: none; font-weight: 600;">Forgot Password?</a>
+                @endif
+            </div>
 
-    <button type="submit" class="btn-submit btn-admin">Sign In as Admin</button>
-    <a href="/" class="back-link">← BACK TO SELECTION</a>
-</form>
+            <button type="submit" class="btn-submit">Sign In as Admin</button>
+            <a href="/" class="back-link">← BACK TO SELECTION</a>
+        </form>
     </div>
 </div>
+
+<script>
+    const adminPasswordInput = document.getElementById('adminPassword');
+    const toggleAdminBtn = document.getElementById('toggleAdminBtn');
+    const adminLashIcon = document.getElementById('adminLashIcon');
+
+    // Lashes SVG Designs
+    const lashHiddenSVG = `
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path>
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+    `;
+
+    const lashVisibleSVG = `
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+        <line x1="3" y1="5" x2="5" y2="8"></line>
+        <line x1="21" y1="5" x2="19" y2="8"></line>
+        <line x1="12" y1="2" x2="12" y2="4"></line>
+    `;
+
+    toggleAdminBtn.addEventListener('click', () => {
+        const isPass = adminPasswordInput.type === 'password';
+        adminPasswordInput.type = isPass ? 'text' : 'password';
+        adminLashIcon.innerHTML = isPass ? lashVisibleSVG : lashHiddenSVG;
+    });
+</script>
 </body>
 </html>
