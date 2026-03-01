@@ -142,6 +142,17 @@
             cursor: pointer;
         }
 
+        .filter-indicator {
+            background: rgba(30, 64, 175, 0.05);
+            border-left: 4px solid var(--acc-primary);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         /* --- TABLE STYLES --- */
         .table-card { 
             background: var(--bg-secondary); 
@@ -188,7 +199,6 @@
 
         .action-btn.students { background: #dbeafe; color: #1e40af; }
         .action-btn.edit { background: #fef3c7; color: #92400e; }
-        .action-btn.delete { background: #fee2e2; color: #991b1b; }
         
         .action-btn:hover { transform: translateY(-1px); filter: brightness(0.95); }
 
@@ -199,7 +209,6 @@
             <h1>Class Schedules</h1>
             
             <div class="d-flex align-items-center gap-3">
-                {{-- DITO BINAGO: Faculty lang ang makakakita ng download buttons --}}
                 @if (auth()->user()->isFaculty())
                     <div class="download-group">
                         <a href="{{ route('full.pdf') }}" class="btn-download btn-pdf">
@@ -221,6 +230,20 @@
                 @endif
             </div>
         </div>
+
+        @if(request()->filled('section_id'))
+            <div class="filter-indicator">
+                <div>
+                    <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; display: block;">Filtered View</span>
+                    <h4 style="margin: 0; color: var(--acc-primary); font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                        <i class='bx bx-group'></i> {{ $schedules->first()->section->name ?? 'Selected Section' }}
+                    </h4>
+                </div>
+                <a href="{{ route('schedules.index') }}" class="btn btn-sm btn-outline-secondary" style="border-radius: 6px; font-size: 12px;">
+                    <i class='bx bx-x'></i> Clear Filter
+                </a>
+            </div>
+        @endif
 
         {{-- Filter Section --}}
         <div class="filter-card">
@@ -333,12 +356,6 @@
                                                 <a href="{{ route('schedules.edit', $schedule->id) }}" class="action-btn edit">
                                                     <i class='bx bx-edit'></i> Edit
                                                 </a>
-                                                <form action="{{ route('schedules.destroy', $schedule->id) }}" method="POST" style="display: inline;">
-                                                    @csrf @method('DELETE')
-                                                    <button type="submit" class="action-btn delete" onclick="return confirm('Delete schedule?')">
-                                                        <i class='bx bx-trash'></i>
-                                                    </button>
-                                                </form>
                                             @endif
                                         </div>
                                     </td>

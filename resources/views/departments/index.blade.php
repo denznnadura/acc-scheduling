@@ -16,7 +16,6 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -179,14 +178,7 @@
             background: #fde68a;
         }
 
-        .action-btn.delete {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .action-btn.delete:hover {
-            background: #fecaca;
-        }
+        /* BINURA KO YUNG .action-btn.delete CSS DITO BUDDY */
 
         .action-btn i {
             font-size: 14px;
@@ -262,7 +254,6 @@
     </style>
 
     <div class="departments-container">
-        <!-- Header -->
         <div class="page-actions">
             <h1>Departments</h1>
             <a href="{{ route('departments.create') }}" class="create-btn">
@@ -271,7 +262,6 @@
             </a>
         </div>
 
-        <!-- Table -->
         <div class="table-card">
             <div class="table-wrapper">
                 <table class="departments-table">
@@ -309,15 +299,7 @@
                                             <i class='bx bx-edit'></i>
                                             Edit
                                         </a>
-                                        <form action="{{ route('departments.destroy', $department) }}" method="POST"
-                                            class="delete-form" style="display: inline;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="action-btn delete">
-                                                <i class='bx bx-trash'></i>
-                                                Delete
-                                            </button>
-                                        </form>
+                                        {{-- BINURA KO YUNG DELETE FORM DITO BUDDY --}}
                                     </div>
                                 </td>
                             </tr>

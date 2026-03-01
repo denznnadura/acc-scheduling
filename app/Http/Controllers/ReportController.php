@@ -26,16 +26,17 @@ class ReportController extends Controller
     public function schedulePdf(Request $request)
     {
         $semesterId = $request->input('semester_id');
+        $semester = Semester::with('academicYear')->findOrFail($semesterId);
 
         $schedules = Schedule::with(['section.program', 'course', 'faculty.user', 'room', 'semester'])
             ->where('semester_id', $semesterId)
+            ->where('status', 'active')
             ->orderBy('day')
             ->orderBy('start_time')
             ->get();
 
-        $semester = Semester::with('academicYear')->findOrFail($semesterId);
-
-        $pdf = Pdf::loadView('reports.schedule-pdf', compact('schedules', 'semester'));
+        $pdf = Pdf::loadView('reports.schedule-pdf', compact('schedules', 'semester'))
+                  ->setPaper('a4', 'landscape');
 
         return $pdf->download('schedule-' . $semester->name . '.pdf');
     }
@@ -43,7 +44,6 @@ class ReportController extends Controller
     public function facultyLoad(Request $request)
     {
         $semesterId = $request->input('semester_id');
-
         $semester = Semester::with('academicYear')->findOrFail($semesterId);
 
         $facultyLoads = Faculty::with([
@@ -64,7 +64,6 @@ class ReportController extends Controller
     public function facultyLoadPdf(Request $request)
     {
         $semesterId = $request->input('semester_id');
-
         $semester = Semester::with('academicYear')->findOrFail($semesterId);
 
         $facultyLoads = Faculty::with([
@@ -90,7 +89,6 @@ class ReportController extends Controller
     public function roomUtilization(Request $request)
     {
         $semesterId = $request->input('semester_id');
-
         $semester = Semester::with('academicYear')->findOrFail($semesterId);
 
         $rooms = Room::withCount(['schedules' => function ($q) use ($semesterId) {
@@ -106,16 +104,21 @@ class ReportController extends Controller
 
         return view('reports.room-utilization', compact('rooms', 'semester'));
     }
+
     public function roomUtilizationPdf(Request $request)
     {
         $semesterId = $request->input('semester_id');
-
         $semester = Semester::with('academicYear')->findOrFail($semesterId);
 
         $rooms = Room::withCount(['schedules' => function ($q) use ($semesterId) {
             $q->where('semester_id', $semesterId)
                 ->where('status', 'active');
         }])
+            ->with(['schedules' => function ($q) use ($semesterId) {
+                $q->where('semester_id', $semesterId)
+                    ->where('status', 'active')
+                    ->with(['course', 'section', 'faculty.user']);
+            }])
             ->where('is_active', true)
             ->get();
 
@@ -126,7 +129,7 @@ class ReportController extends Controller
 
         return $pdf->download('room-utilization-report-' . $semester->name . '-' . now()->format('Y-m-d') . '.pdf');
     }
-    // Schedule Excel
+
     public function scheduleExcel(Request $request)
     {
         $semesterId = $request->input('semester_id');
@@ -138,7 +141,6 @@ class ReportController extends Controller
         );
     }
 
-    // Faculty Load Excel
     public function facultyLoadExcel(Request $request)
     {
         $semesterId = $request->input('semester_id');
@@ -150,7 +152,6 @@ class ReportController extends Controller
         );
     }
 
-    // Room Utilization Excel
     public function roomUtilizationExcel(Request $request)
     {
         $semesterId = $request->input('semester_id');
@@ -161,10 +162,10 @@ class ReportController extends Controller
             'room-utilization-' . $semester->name . '.xlsx'
         );
     }
+
     public function scheduleView(Request $request)
     {
         $semesterId = $request->input('semester_id');
-
         $semester = Semester::with('academicYear')->findOrFail($semesterId);
 
         $schedules = Schedule::with(['section.program', 'course', 'faculty.user', 'room', 'semester'])
@@ -177,8 +178,6 @@ class ReportController extends Controller
         return view('reports.schedule-view', compact('schedules', 'semester'));
     }
 
-
-    // Schedule Word Export (with logo)
     public function scheduleWord(Request $request)
     {
         $semesterId = $request->input('semester_id');
@@ -192,80 +191,31 @@ class ReportController extends Controller
             ->get();
 
         $phpWord = new PhpWord();
-
-        // Document properties
         $properties = $phpWord->getDocInfo();
         $properties->setCreator('Aklan Catholic College');
         $properties->setCompany('ACC');
         $properties->setTitle('Schedule Report');
         $properties->setDescription('Class Schedule Report');
 
-        $section = $phpWord->addSection();
+        $section = $phpWord->addSection(['orientation' => 'landscape']);
 
-        // Add Logo (centered)
         $logoPath = public_path('assets/logo.png');
         if (file_exists($logoPath)) {
-            $section->addImage(
-                $logoPath,
-                [
-                    'width' => 80,
-                    'height' => 80,
-                    'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER
-                ]
-            );
+            $section->addImage($logoPath, ['width' => 80, 'height' => 80, 'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]);
             $section->addTextBreak(0.5);
         }
 
-        // Header
-        $section->addText(
-            'AKLAN CATHOLIC COLLEGE',
-            ['name' => 'Arial', 'size' => 18, 'bold' => true, 'color' => '1e40af'],
-            ['alignment' => 'center']
-        );
-        $section->addText(
-            'Pro Deo Et Patria',
-            ['name' => 'Arial', 'size' => 10, 'italic' => true, 'color' => '059669'],
-            ['alignment' => 'center']
-        );
-        $section->addText(
-            'Kalibo, Aklan, Philippines',
-            ['name' => 'Arial', 'size' => 9, 'color' => '666666'],
-            ['alignment' => 'center']
-        );
-
+        $section->addText('AKLAN CATHOLIC COLLEGE', ['name' => 'Arial', 'size' => 18, 'bold' => true, 'color' => '1e40af'], ['alignment' => 'center']);
+        $section->addText('Pro Deo Et Patria', ['name' => 'Arial', 'size' => 10, 'italic' => true, 'color' => '059669'], ['alignment' => 'center']);
+        $section->addText('Kalibo, Aklan, Philippines', ['name' => 'Arial', 'size' => 9, 'color' => '666666'], ['alignment' => 'center']);
+        $section->addTextBreak(1);
+        $section->addText('CLASS SCHEDULE REPORT', ['name' => 'Arial', 'size' => 16, 'bold' => true, 'color' => '059669'], ['alignment' => 'center']);
+        $section->addTextBreak(1);
+        $section->addText("Semester: {$semester->name} | Academic Year: {$semester->academicYear->code}", ['name' => 'Arial', 'size' => 10], ['alignment' => 'center']);
+        $section->addText('Generated: ' . now()->format('F d, Y g:i A'), ['name' => 'Arial', 'size' => 9, 'color' => '666666'], ['alignment' => 'center']);
         $section->addTextBreak(1);
 
-        $section->addText(
-            'CLASS SCHEDULE REPORT',
-            ['name' => 'Arial', 'size' => 16, 'bold' => true, 'color' => '059669'],
-            ['alignment' => 'center']
-        );
-
-        $section->addTextBreak(1);
-
-        // Info
-        $section->addText(
-            "Semester: {$semester->name} | Academic Year: {$semester->academicYear->code}",
-            ['name' => 'Arial', 'size' => 10],
-            ['alignment' => 'center']
-        );
-        $section->addText(
-            'Generated: ' . now()->format('F d, Y g:i A'),
-            ['name' => 'Arial', 'size' => 9, 'color' => '666666'],
-            ['alignment' => 'center']
-        );
-
-        $section->addTextBreak(1);
-
-        // Table
-        $table = $section->addTable([
-            'borderSize' => 6,
-            'borderColor' => 'e5e7eb',
-            'cellMargin' => 80,
-            'alignment' => 'center'
-        ]);
-
-        // Header row
+        $table = $section->addTable(['borderSize' => 6, 'borderColor' => 'e5e7eb', 'cellMargin' => 80, 'alignment' => 'center']);
         $table->addRow(400);
         $table->addCell(1500)->addText('Course', ['bold' => true, 'size' => 9]);
         $table->addCell(1200)->addText('Section', ['bold' => true, 'size' => 9]);
@@ -276,36 +226,21 @@ class ReportController extends Controller
         $table->addCell(1000)->addText('Type', ['bold' => true, 'size' => 9]);
         $table->addCell(600)->addText('Units', ['bold' => true, 'size' => 9]);
 
-        // Data rows
         foreach ($schedules as $schedule) {
             $table->addRow();
             $table->addCell(1500)->addText($schedule->course->code, ['size' => 9]);
             $table->addCell(1200)->addText($schedule->section->name, ['size' => 9]);
-            $table->addCell(2000)->addText($schedule->faculty->user->name, ['size' => 9]);
+            $table->addCell(2000)->addText($schedule->faculty->user->name ?? 'TBA', ['size' => 9]);
             $table->addCell(1000)->addText($schedule->room->code, ['size' => 9]);
             $table->addCell(1000)->addText($schedule->day, ['size' => 9]);
-            $table->addCell(1500)->addText(
-                date('g:i A', strtotime($schedule->start_time)) . ' - ' . date('g:i A', strtotime($schedule->end_time)),
-                ['size' => 9]
-            );
+            $table->addCell(1500)->addText(date('g:i A', strtotime($schedule->start_time)) . ' - ' . date('g:i A', strtotime($schedule->end_time)), ['size' => 9]);
             $table->addCell(1000)->addText(ucfirst($schedule->type), ['size' => 9]);
             $table->addCell(600)->addText($schedule->course->units, ['size' => 9]);
         }
 
-        $filename = 'schedule-report-' . $semester->name . '.docx';
-        $tempFile = storage_path('app/temp/' . $filename);
-
-        if (!file_exists(storage_path('app/temp'))) {
-            mkdir(storage_path('app/temp'), 0755, true);
-        }
-
-        $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
-        $objWriter->save($tempFile);
-
-        return response()->download($tempFile)->deleteFileAfterSend(true);
+        return $this->saveAndDownloadWord($phpWord, 'schedule-report-' . $semester->name . '.docx');
     }
 
-    // Faculty Load Word Export (with logo)
     public function facultyLoadWord(Request $request)
     {
         $semesterId = $request->input('semester_id');
@@ -322,74 +257,31 @@ class ReportController extends Controller
         ])->where('is_active', true)->get();
 
         $phpWord = new PhpWord();
-
-        $properties = $phpWord->getDocInfo();
-        $properties->setCreator('Aklan Catholic College');
-        $properties->setTitle('Faculty Load Report');
-
         $section = $phpWord->addSection();
 
-        // Add Logo (centered)
         $logoPath = public_path('assets/logo.png');
         if (file_exists($logoPath)) {
-            $section->addImage(
-                $logoPath,
-                [
-                    'width' => 80,
-                    'height' => 80,
-                    'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER
-                ]
-            );
+            $section->addImage($logoPath, ['width' => 80, 'height' => 80, 'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]);
             $section->addTextBreak(0.5);
         }
 
-        // Header
-        $section->addText(
-            'AKLAN CATHOLIC COLLEGE',
-            ['name' => 'Arial', 'size' => 18, 'bold' => true, 'color' => '1e40af'],
-            ['alignment' => 'center']
-        );
-        $section->addText(
-            'Pro Deo Et Patria',
-            ['name' => 'Arial', 'size' => 10, 'italic' => true, 'color' => '059669'],
-            ['alignment' => 'center']
-        );
-
+        $section->addText('AKLAN CATHOLIC COLLEGE', ['name' => 'Arial', 'size' => 18, 'bold' => true, 'color' => '1e40af'], ['alignment' => 'center']);
+        $section->addText('Pro Deo Et Patria', ['name' => 'Arial', 'size' => 10, 'italic' => true, 'color' => '059669'], ['alignment' => 'center']);
         $section->addTextBreak(1);
-
-        $section->addText(
-            'FACULTY LOAD REPORT',
-            ['name' => 'Arial', 'size' => 16, 'bold' => true, 'color' => '059669'],
-            ['alignment' => 'center']
-        );
-
-        $section->addText(
-            "Semester: {$semester->name} | Academic Year: {$semester->academicYear->code}",
-            ['name' => 'Arial', 'size' => 10],
-            ['alignment' => 'center']
-        );
-
+        $section->addText('FACULTY LOAD REPORT', ['name' => 'Arial', 'size' => 16, 'bold' => true, 'color' => '059669'], ['alignment' => 'center']);
+        $section->addText("Semester: {$semester->name} | Academic Year: {$semester->academicYear->code}", ['name' => 'Arial', 'size' => 10], ['alignment' => 'center']);
         $section->addTextBreak(1);
 
         foreach ($facultyLoads as $faculty) {
             $totalUnits = $faculty->schedules->sum(fn($s) => $s->course->units);
             $totalPreps = $faculty->schedules->unique('course_id')->count();
 
-            // Faculty name
-            $section->addText(
-                $faculty->user->name,
-                ['name' => 'Arial', 'size' => 14, 'bold' => true, 'color' => '1e40af']
-            );
-            $section->addText(
-                "{$faculty->employee_id} | {$faculty->department->name} | Units: {$totalUnits}/{$faculty->max_units} | Preps: {$totalPreps}/{$faculty->max_preparations}",
-                ['name' => 'Arial', 'size' => 9, 'color' => '666666']
-            );
-
+            $section->addText($faculty->user->name, ['name' => 'Arial', 'size' => 14, 'bold' => true, 'color' => '1e40af']);
+            $section->addText("{$faculty->employee_id} | {$faculty->department->name} | Units: {$totalUnits}/{$faculty->max_units} | Preps: {$totalPreps}/{$faculty->max_preparations}", ['name' => 'Arial', 'size' => 9, 'color' => '666666']);
             $section->addTextBreak(0.5);
 
             if ($faculty->schedules->count() > 0) {
                 $table = $section->addTable(['borderSize' => 6, 'cellMargin' => 80]);
-
                 $table->addRow();
                 $table->addCell(1500)->addText('Course', ['bold' => true, 'size' => 9]);
                 $table->addCell(1000)->addText('Section', ['bold' => true, 'size' => 9]);
@@ -403,32 +295,17 @@ class ReportController extends Controller
                     $table->addCell(1500)->addText($schedule->course->code, ['size' => 9]);
                     $table->addCell(1000)->addText($schedule->section->name, ['size' => 9]);
                     $table->addCell(1000)->addText($schedule->day, ['size' => 9]);
-                    $table->addCell(1500)->addText(
-                        date('g:i A', strtotime($schedule->start_time)) . ' - ' . date('g:i A', strtotime($schedule->end_time)),
-                        ['size' => 9]
-                    );
+                    $table->addCell(1500)->addText(date('g:i A', strtotime($schedule->start_time)) . ' - ' . date('g:i A', strtotime($schedule->end_time)), ['size' => 9]);
                     $table->addCell(800)->addText($schedule->room->code, ['size' => 9]);
                     $table->addCell(600)->addText($schedule->course->units, ['size' => 9]);
                 }
             }
-
             $section->addTextBreak(1);
         }
 
-        $filename = 'faculty-load-report-' . $semester->name . '.docx';
-        $tempFile = storage_path('app/temp/' . $filename);
-
-        if (!file_exists(storage_path('app/temp'))) {
-            mkdir(storage_path('app/temp'), 0755, true);
-        }
-
-        $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
-        $objWriter->save($tempFile);
-
-        return response()->download($tempFile)->deleteFileAfterSend(true);
+        return $this->saveAndDownloadWord($phpWord, 'faculty-load-report-' . $semester->name . '.docx');
     }
 
-    // Room Utilization Word Export (with logo)
     public function roomUtilizationWord(Request $request)
     {
         $semesterId = $request->input('semester_id');
@@ -439,58 +316,22 @@ class ReportController extends Controller
         }])->where('is_active', true)->get();
 
         $phpWord = new PhpWord();
-
-        $properties = $phpWord->getDocInfo();
-        $properties->setCreator('Aklan Catholic College');
-        $properties->setTitle('Room Utilization Report');
-
         $section = $phpWord->addSection();
 
-        // Add Logo (centered)
         $logoPath = public_path('assets/logo.png');
         if (file_exists($logoPath)) {
-            $section->addImage(
-                $logoPath,
-                [
-                    'width' => 80,
-                    'height' => 80,
-                    'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER
-                ]
-            );
+            $section->addImage($logoPath, ['width' => 80, 'height' => 80, 'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]);
             $section->addTextBreak(0.5);
         }
 
-        // Header
-        $section->addText(
-            'AKLAN CATHOLIC COLLEGE',
-            ['name' => 'Arial', 'size' => 18, 'bold' => true, 'color' => '1e40af'],
-            ['alignment' => 'center']
-        );
-        $section->addText(
-            'Pro Deo Et Patria',
-            ['name' => 'Arial', 'size' => 10, 'italic' => true, 'color' => '059669'],
-            ['alignment' => 'center']
-        );
-
+        $section->addText('AKLAN CATHOLIC COLLEGE', ['name' => 'Arial', 'size' => 18, 'bold' => true, 'color' => '1e40af'], ['alignment' => 'center']);
+        $section->addText('Pro Deo Et Patria', ['name' => 'Arial', 'size' => 10, 'italic' => true, 'color' => '059669'], ['alignment' => 'center']);
+        $section->addTextBreak(1);
+        $section->addText('ROOM UTILIZATION REPORT', ['name' => 'Arial', 'size' => 16, 'bold' => true, 'color' => '059669'], ['alignment' => 'center']);
+        $section->addText("Semester: {$semester->name} | Academic Year: {$semester->academicYear->code}", ['name' => 'Arial', 'size' => 10], ['alignment' => 'center']);
         $section->addTextBreak(1);
 
-        $section->addText(
-            'ROOM UTILIZATION REPORT',
-            ['name' => 'Arial', 'size' => 16, 'bold' => true, 'color' => '059669'],
-            ['alignment' => 'center']
-        );
-
-        $section->addText(
-            "Semester: {$semester->name} | Academic Year: {$semester->academicYear->code}",
-            ['name' => 'Arial', 'size' => 10],
-            ['alignment' => 'center']
-        );
-
-        $section->addTextBreak(1);
-
-        // Table
         $table = $section->addTable(['borderSize' => 6, 'cellMargin' => 80]);
-
         $table->addRow();
         $table->addCell(1000)->addText('Code', ['bold' => true, 'size' => 9]);
         $table->addCell(2000)->addText('Room Name', ['bold' => true, 'size' => 9]);
@@ -514,13 +355,17 @@ class ReportController extends Controller
             $table->addCell(1000)->addText($utilization . '%', ['size' => 9, 'bold' => true]);
         }
 
-        $filename = 'room-utilization-report-' . $semester->name . '.docx';
-        $tempFile = storage_path('app/temp/' . $filename);
+        return $this->saveAndDownloadWord($phpWord, 'room-utilization-report-' . $semester->name . '.docx');
+    }
 
-        if (!file_exists(storage_path('app/temp'))) {
-            mkdir(storage_path('app/temp'), 0755, true);
+    private function saveAndDownloadWord($phpWord, $filename)
+    {
+        $tempDir = storage_path('app/temp');
+        if (!file_exists($tempDir)) {
+            mkdir($tempDir, 0755, true);
         }
 
+        $tempFile = $tempDir . '/' . $filename;
         $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
         $objWriter->save($tempFile);
 

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Course extends Model
 {
@@ -40,6 +41,18 @@ class Course extends Model
     public function schedules(): HasMany
     {
         return $this->hasMany(Schedule::class);
+    }
+
+    public function sections(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Section::class,
+            Schedule::class,
+            'course_id', 
+            'id',        
+            'id',        
+            'section_id' 
+        )->distinct();
     }
 
     public function prerequisites()

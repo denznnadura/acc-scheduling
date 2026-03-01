@@ -16,7 +16,6 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -40,7 +39,6 @@
             color: var(--text-tertiary);
         }
 
-        /* Form Card */
         .form-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
@@ -48,7 +46,6 @@
             padding: 24px;
         }
 
-        /* Section */
         .form-section {
             margin-bottom: 24px;
         }
@@ -66,7 +63,6 @@
             border-bottom: 1px solid var(--border-light);
         }
 
-        /* Form Labels */
         .form-label {
             font-size: 12px;
             font-weight: 600;
@@ -79,7 +75,6 @@
             color: #dc2626;
         }
 
-        /* Form Controls */
         .form-control,
         .form-select {
             border: 1px solid var(--border-color);
@@ -108,7 +103,6 @@
             min-height: 80px;
         }
 
-        /* Validation */
         .invalid-feedback {
             font-size: 11px;
             color: #dc2626;
@@ -124,14 +118,12 @@
             font-size: 14px;
         }
 
-        /* Help Text */
         .form-help {
             font-size: 11px;
             color: var(--text-tertiary);
             margin-top: 4px;
         }
 
-        /* Actions */
         .form-actions {
             display: flex;
             gap: 12px;
@@ -186,7 +178,6 @@
             font-size: 16px;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .form-card {
                 padding: 20px;
@@ -207,7 +198,6 @@
             }
         }
 
-        /* Day Checkboxes */
         .form-check:has(.day-checkbox) {
             display: flex;
             align-items: center;
@@ -239,18 +229,15 @@
     </style>
 
     <div class="form-container">
-        <!-- Header -->
         <div class="form-header">
             <h1>Create New Schedule</h1>
             <p>Fill in the details to create a class schedule</p>
         </div>
 
-        <!-- Form -->
         <div class="form-card">
             <form action="{{ route('schedules.store') }}" method="POST" id="scheduleForm">
                 @csrf
 
-                <!-- Basic Info -->
                 <div class="form-section">
                     <h3 class="section-title">Basic Information</h3>
 
@@ -284,7 +271,7 @@
                                 @foreach ($sections as $section)
                                     <option value="{{ $section->id }}"
                                         {{ old('section_id') == $section->id ? 'selected' : '' }}>
-                                        {{ $section->name }} - {{ $section->program->name }}
+                                        {{ $section->full_name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -319,10 +306,8 @@
                             <select name="type" id="type"
                                 class="form-select @error('type') is-invalid @enderror" required>
                                 <option value="">Select Type</option>
-                                <option value="lecture" {{ old('type') == 'lecture' ? 'selected' : '' }}>Lecture
-                                </option>
-                                <option value="laboratory" {{ old('type') == 'laboratory' ? 'selected' : '' }}>
-                                    Laboratory</option>
+                                <option value="lecture" {{ old('type') == 'lecture' ? 'selected' : '' }}>Lecture</option>
+                                <option value="laboratory" {{ old('type') == 'laboratory' ? 'selected' : '' }}>Laboratory</option>
                             </select>
                             @error('type')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -331,7 +316,6 @@
                     </div>
                 </div>
 
-                <!-- Assignment -->
                 <div class="form-section">
                     <h3 class="section-title">Faculty & Room</h3>
 
@@ -376,7 +360,6 @@
                     </div>
                 </div>
 
-                <!-- Schedule Details Section - UPDATED -->
                 <div class="form-section">
                     <h3 class="section-title">Schedule Details</h3>
 
@@ -447,8 +430,6 @@
                     </div>
                 </div>
 
-
-                <!-- Additional -->
                 <div class="form-section">
                     <h3 class="section-title">Additional Details</h3>
 
@@ -477,7 +458,6 @@
                     </div>
                 </div>
 
-                <!-- Actions -->
                 <div class="form-actions">
                     <button type="submit" class="submit-btn">
                         <i class='bx bx-check'></i>
@@ -512,10 +492,9 @@
                 const semesterId = document.getElementById('semester_id').value;
 
                 if (!facultyId || !roomId || !startTime || !endTime || !semesterId || selectedDays.length === 0) {
-                    return; // Don't check if required fields are empty
+                    return;
                 }
 
-                // Check each selected day
                 selectedDays.forEach(day => {
                     const data = {
                         faculty_id: facultyId,

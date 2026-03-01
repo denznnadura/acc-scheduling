@@ -42,13 +42,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Semester activation
         Route::post('semesters/{semester}/activate', [SemesterController::class, 'activate'])->name('semesters.activate');
-        Route::get('reports/faculty-load-pdf', [ReportController::class, 'facultyLoadPdf'])->name('reports.faculty-load-pdf');
+        
+        // Updated Faculty Load PDF Route to point to FacultyController
+        Route::get('reports/faculty-load-pdf/{id?}', [FacultyController::class, 'downloadSchedulePdf'])->name('reports.faculty-load-pdf');
+        
         Route::get('reports/room-utilization-pdf', [ReportController::class, 'roomUtilizationPdf'])->name('reports.room-utilization-pdf');
+        
         // Excel exports
         Route::get('reports/schedule-excel', [ReportController::class, 'scheduleExcel'])->name('reports.schedule-excel');
+        // Added the specific download route for Faculty Load
+        Route::get('reports/faculty-load/download/{id}', [ReportController::class, 'downloadFacultyLoad'])->name('reports.faculty-load.download');
         Route::get('reports/faculty-load-excel', [ReportController::class, 'facultyLoadExcel'])->name('reports.faculty-load-excel');
         Route::get('reports/room-utilization-excel', [ReportController::class, 'roomUtilizationExcel'])->name('reports.room-utilization-excel');
         Route::get('reports/schedule-view', [ReportController::class, 'scheduleView'])->name('reports.schedule-view');
+        
         // Word exports
         Route::get('reports/schedule-word', [ReportController::class, 'scheduleWord'])->name('reports.schedule-word');
         Route::get('reports/faculty-load-word', [ReportController::class, 'facultyLoadWord'])->name('reports.faculty-load-word');
@@ -61,7 +68,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Admin Enrollment Management
     Route::get('admin/enrollments', [EnrollmentController::class, 'adminIndex'])->name('admin.enrollments.index');
-    // Isinama ko na rin yung POST at DELETE routes mo dito buddy
     Route::post('admin/enrollments', [EnrollmentController::class, 'adminStore'])->name('admin.enrollments.store');
     Route::delete('admin/enrollments/{enrollment}', [EnrollmentController::class, 'adminDestroy'])->name('admin.enrollments.destroy');
 
@@ -74,13 +80,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('schedules/{schedule}/students-excel', [ScheduleController::class, 'studentsListExcel'])->name('schedules.students-excel');
         Route::get('schedules/{schedule}/students-word', [ScheduleController::class, 'studentsListWord'])->name('schedules.students-word');
 
-        // --- DAGDAG NI BUDDY: 1-Click Download Routes ---
         Route::get('/full-schedule/pdf', [ScheduleController::class, 'downloadFullPdf'])->name('full.pdf');
         Route::get('/full-schedule/excel', [ScheduleController::class, 'downloadFullExcel'])->name('full.excel');
         Route::get('/full-schedule/word', [ScheduleController::class, 'downloadFullWord'])->name('full.word');
     });
 
-    // Remove student enrollment routes - students can only view
+    // Student routes
     Route::middleware(['role:Student'])->group(function () {
         Route::get('enrollments', [EnrollmentController::class, 'index'])->name('enrollments.index');
     });
@@ -97,7 +102,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Artisan::call('config:clear');
         Artisan::call('cache:clear');
         Artisan::call('view:clear');
-        return "Cache Cleared!"; // Dagdag lang na return message buddy
+        return "Cache Cleared!";
     });
 });
 

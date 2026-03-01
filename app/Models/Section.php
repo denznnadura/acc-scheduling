@@ -47,9 +47,13 @@ class Section extends Model
         return $this->hasMany(Schedule::class);
     }
 
-    // ADD THIS RELATIONSHIP
     public function students(): HasMany
     {
         return $this->hasMany(Student::class);
+    }
+
+    public function getFullNameAttribute(): string
+    {
+        return "{$this->name}";
     }
 }

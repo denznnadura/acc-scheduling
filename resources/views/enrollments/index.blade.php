@@ -16,7 +16,6 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -277,7 +276,6 @@
     </style>
 
     <div class="enrollment-container">
-        <!-- Section Info Banner -->
         <div class="section-info-banner">
             <div class="banner-icon">
                 <i class='bx bxs-graduation'></i>
@@ -299,7 +297,6 @@
             </div>
         </div>
 
-        <!-- Info Alert -->
         <div class="info-alert">
             <i class='bx bx-info-circle'></i>
             <div>
@@ -308,7 +305,6 @@
             </div>
         </div>
 
-        <!-- Enrolled Courses -->
         @if ($enrollments->count() > 0)
             <div class="section-header">
                 <h3>My Enrolled Courses</h3>

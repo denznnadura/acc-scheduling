@@ -12,15 +12,8 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .page-actions {
@@ -59,9 +52,7 @@
             color: white;
         }
 
-        .create-btn i {
-            font-size: 18px;
-        }
+        .create-btn i { font-size: 18px; }
 
         /* Table Card */
         .table-card {
@@ -71,9 +62,7 @@
             overflow: hidden;
         }
 
-        .table-wrapper {
-            overflow-x: auto;
-        }
+        .table-wrapper { overflow-x: auto; }
 
         .semesters-table {
             width: 100%;
@@ -103,17 +92,8 @@
             border-bottom: 1px solid var(--border-light);
         }
 
-        .semesters-table tbody tr {
-            transition: background 0.2s;
-        }
-
-        .semesters-table tbody tr:hover {
-            background: var(--bg-primary);
-        }
-
-        .semesters-table tbody tr:last-child td {
-            border-bottom: none;
-        }
+        .semesters-table tbody tr:hover { background: var(--bg-primary); }
+        .semesters-table tbody tr:last-child td { border-bottom: none; }
 
         /* Badges */
         .badge {
@@ -131,10 +111,6 @@
             color: #059669;
         }
 
-        .badge i {
-            font-size: 12px;
-        }
-
         /* Buttons */
         .activate-btn {
             padding: 6px 12px;
@@ -148,6 +124,7 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            cursor: pointer;
         }
 
         .activate-btn:hover {
@@ -180,22 +157,7 @@
             color: #92400e;
         }
 
-        .action-btn.edit:hover {
-            background: #fde68a;
-        }
-
-        .action-btn.delete {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .action-btn.delete:hover {
-            background: #fecaca;
-        }
-
-        .action-btn i {
-            font-size: 14px;
-        }
+        .action-btn.edit:hover { background: #fde68a; }
 
         /* Empty State */
         .empty-state {
@@ -210,18 +172,6 @@
             margin-bottom: 16px;
         }
 
-        .empty-state-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-        }
-
-        .empty-state-text {
-            font-size: 13px;
-            color: var(--text-tertiary);
-        }
-
         /* Pagination */
         .pagination-wrapper {
             padding: 16px;
@@ -230,44 +180,14 @@
             justify-content: center;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
-            .page-actions {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .page-actions h1 {
-                font-size: 20px;
-            }
-
-            .create-btn {
-                justify-content: center;
-            }
-
-            .semesters-table thead th {
-                padding: 10px 12px;
-                font-size: 10px;
-            }
-
-            .semesters-table tbody td {
-                padding: 12px;
-                font-size: 12px;
-            }
-
-            .action-buttons {
-                flex-direction: column;
-            }
-
-            .action-btn {
-                width: 100%;
-                justify-content: center;
-            }
+            .page-actions { flex-direction: column; align-items: stretch; }
+            .action-buttons { flex-direction: column; }
+            .action-btn, .activate-btn { width: 100%; justify-content: center; }
         }
     </style>
 
     <div class="semesters-container">
-        <!-- Header -->
         <div class="page-actions">
             <h1>Semesters</h1>
             <a href="{{ route('semesters.create') }}" class="create-btn">
@@ -276,7 +196,6 @@
             </a>
         </div>
 
-        <!-- Table -->
         <div class="table-card">
             <div class="table-wrapper">
                 <table class="semesters-table">
@@ -326,15 +245,7 @@
                                             <i class='bx bx-edit'></i>
                                             Edit
                                         </a>
-                                        <form action="{{ route('semesters.destroy', $semester) }}" method="POST"
-                                            class="delete-form" style="display: inline;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="action-btn delete">
-                                                <i class='bx bx-trash'></i>
-                                                Delete
-                                            </button>
-                                        </form>
+                                        {{-- Delete Form and Button Removed --}}
                                     </div>
                                 </td>
                             </tr>

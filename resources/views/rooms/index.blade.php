@@ -174,15 +174,6 @@
             background: #fde68a;
         }
 
-        .action-btn.delete {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .action-btn.delete:hover {
-            background: #fecaca;
-        }
-
         .action-btn i {
             font-size: 14px;
         }
@@ -257,7 +248,6 @@
     </style>
 
     <div class="rooms-container">
-        <!-- Header -->
         <div class="page-actions">
             <h1>Rooms</h1>
             <a href="{{ route('rooms.create') }}" class="create-btn">
@@ -266,7 +256,6 @@
             </a>
         </div>
 
-        <!-- Table -->
         <div class="table-card">
             <div class="table-wrapper">
                 <table class="rooms-table">
@@ -307,15 +296,7 @@
                                             <i class='bx bx-edit'></i>
                                             Edit
                                         </a>
-                                        <form action="{{ route('rooms.destroy', $room) }}" method="POST"
-                                            class="delete-form" style="display: inline;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="action-btn delete">
-                                                <i class='bx bx-trash'></i>
-                                                Delete
-                                            </button>
-                                        </form>
+                                        {{-- Delete button removed --}}
                                     </div>
                                 </td>
                             </tr>

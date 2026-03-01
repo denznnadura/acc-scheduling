@@ -7,9 +7,10 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class RoomUtilizationExport implements FromCollection, WithHeadings, WithTitle, WithStyles
+class RoomUtilizationExport implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize
 {
     protected $semesterId;
 
@@ -63,7 +64,13 @@ class RoomUtilizationExport implements FromCollection, WithHeadings, WithTitle, 
     public function styles(Worksheet $sheet)
     {
         return [
-            1 => ['font' => ['bold' => true, 'size' => 12]],
+            1 => [
+                'font' => ['bold' => true, 'size' => 12],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E2E8F0']
+                ]
+            ],
         ];
     }
 }

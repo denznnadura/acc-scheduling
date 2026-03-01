@@ -29,7 +29,7 @@ class ScheduleController extends Controller
             'course',
             'faculty.user',
             'room',
-            'semester',
+            'semester.academicYear',
             'enrollments'
         ]);
 
@@ -196,13 +196,17 @@ class ScheduleController extends Controller
     public function downloadFullPdf()
     {
         $facultyId = auth()->user()->faculty->id;
-        $schedules = Schedule::with(['course', 'section', 'room'])
+        $schedules = Schedule::with(['course', 'section', 'room', 'semester.academicYear'])
             ->where('faculty_id', $facultyId)
             ->orderBy(DB::raw("FIELD(day, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')"))
             ->orderBy('start_time')->get();
 
-        $html = $this->generateFullScheduleHtml($schedules, auth()->user()->name);
-        return Pdf::loadHTML($html)->setPaper('a4', 'portrait')->download('Full-Schedule-'.auth()->user()->name.'.pdf');
+        $pdf = Pdf::loadView('reports.faculty-schedule', [
+            'schedules' => $schedules,
+            'name' => auth()->user()->name
+        ]);
+
+        return $pdf->setPaper('a4', 'portrait')->download('Full-Schedule-'.auth()->user()->name.'.pdf');
     }
 
     public function downloadFullExcel()
@@ -239,12 +243,16 @@ class ScheduleController extends Controller
     public function downloadFullWord()
     {
         $facultyId = auth()->user()->faculty->id;
-        $schedules = Schedule::with(['course', 'section', 'room'])
+        $schedules = Schedule::with(['course', 'section', 'room', 'semester.academicYear'])
             ->where('faculty_id', $facultyId)
             ->orderBy(DB::raw("FIELD(day, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')"))
             ->orderBy('start_time')->get();
 
-        $html = $this->generateFullScheduleHtml($schedules, auth()->user()->name, true);
+        $html = view('reports.faculty-schedule', [
+            'schedules' => $schedules,
+            'name' => auth()->user()->name,
+            'forWord' => true
+        ])->render();
         
         $filename = "Full-Schedule-".auth()->user()->name.".doc";
         $headers = [
@@ -252,56 +260,6 @@ class ScheduleController extends Controller
             "Content-Disposition" => "attachment;Filename=".$filename
         ];
         return response($html, 200, $headers);
-    }
-
-    private function generateFullScheduleHtml($schedules, $name, $forWord = false)
-    {
-        $logoImg = "";
-        
-        if ($forWord) {
-            // Use live URL for Word to avoid Base64 text rendering issues
-            $logoUrl = asset('assets/logo.png'); 
-            $logoImg = "<img src='{$logoUrl}' width='80' height='80'>";
-        } else {
-            // Use Base64 for PDF as it is more reliable for local file rendering in DomPDF
-            $path = public_path('assets/logo.png'); 
-            if (file_exists($path)) {
-                $type = pathinfo($path, PATHINFO_EXTENSION);
-                $data = file_get_contents($path);
-                $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                $logoImg = "<img src='{$base64}' style='height: 80px;'>";
-            }
-        }
-
-        $rows = '';
-        foreach($schedules as $sched) {
-            $rows .= "<tr>
-                <td style='border:1px solid #000; padding:8px;'>{$sched->day}</td>
-                <td style='border:1px solid #000; padding:8px;'>".date('h:i A', strtotime($sched->start_time))." - ".date('h:i A', strtotime($sched->end_time))."</td>
-                <td style='border:1px solid #000; padding:8px;'>{$sched->course->code}</td>
-                <td style='border:1px solid #000; padding:8px;'>{$sched->section->name}</td>
-                <td style='border:1px solid #000; padding:8px;'>{$sched->room->code}</td>
-            </tr>";
-        }
-
-        return "
-            <div style='text-align:center; font-family:Arial;'>
-                {$logoImg}
-                <h2 style='margin:5px 0;'>AKLAN CATHOLIC COLLEGE</h2>
-                <p style='margin:0; font-style: italic; color: #2e7d32;'>Pro Deo Et Patria</p>
-                <h3 style='margin:5px 0;'>FACULTY CLASS SCHEDULE</h3>
-                <p style='margin:15px 0; text-align:left;'><strong>Name:</strong> {$name}</p>
-            </div>
-            <table style='width:100%; border-collapse:collapse; font-family:Arial; font-size:12px;'>
-                <thead><tr style='background:#f2f2f2;'>
-                    <th style='border:1px solid #000; padding:8px;'>Day</th>
-                    <th style='border:1px solid #000; padding:8px;'>Time</th>
-                    <th style='border:1px solid #000; padding:8px;'>Course</th>
-                    <th style='border:1px solid #000; padding:8px;'>Section</th>
-                    <th style='border:1px solid #000; padding:8px;'>Room</th>
-                </tr></thead>
-                <tbody>{$rows}</tbody>
-            </table>";
     }
 
     private function generateTimeSlots(): array

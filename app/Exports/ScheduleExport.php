@@ -3,14 +3,14 @@
 namespace App\Exports;
 
 use App\Models\Schedule;
-use App\Models\Semester;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ScheduleExport implements FromCollection, WithHeadings, WithTitle, WithStyles
+class ScheduleExport implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize
 {
     protected $semesterId;
 
@@ -28,15 +28,15 @@ class ScheduleExport implements FromCollection, WithHeadings, WithTitle, WithSty
             ->get()
             ->map(function ($schedule) {
                 return [
-                    'course_code' => $schedule->course->code,
-                    'course_name' => $schedule->course->name,
-                    'section' => $schedule->section->name,
-                    'faculty' => $schedule->faculty->user->name,
-                    'room' => $schedule->room->code,
-                    'day' => $schedule->day,
-                    'time' => date('g:i A', strtotime($schedule->start_time)) . ' - ' . date('g:i A', strtotime($schedule->end_time)),
-                    'type' => ucfirst($schedule->type),
-                    'units' => $schedule->course->units,
+                    'course_code' => $schedule->course->code ?? 'N/A',
+                    'course_name' => $schedule->course->name ?? 'N/A',
+                    'section'     => $schedule->section->name ?? 'N/A',
+                    'faculty'     => $schedule->faculty->user->name ?? 'TBA',
+                    'room'        => $schedule->room->code ?? 'TBA',
+                    'day'         => $schedule->day,
+                    'time'        => date('g:i A', strtotime($schedule->start_time)) . ' - ' . date('g:i A', strtotime($schedule->end_time)),
+                    'type'        => ucfirst($schedule->type),
+                    'units'       => $schedule->course->units ?? 0,
                 ];
             });
     }
@@ -64,7 +64,13 @@ class ScheduleExport implements FromCollection, WithHeadings, WithTitle, WithSty
     public function styles(Worksheet $sheet)
     {
         return [
-            1 => ['font' => ['bold' => true, 'size' => 12]],
+            1 => [
+                'font' => ['bold' => true, 'size' => 12],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E2E8F0']
+                ]
+            ],
         ];
     }
 }

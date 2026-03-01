@@ -4,7 +4,6 @@
     <x-slot name="breadcrumb">Analytics & Reports</x-slot>
 
     <style>
-        /* Minimalist Reports Page */
         .reports-container {
             max-width: 1400px;
             margin: 0 auto;
@@ -16,7 +15,6 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -34,7 +32,6 @@
             letter-spacing: -0.02em;
         }
 
-        /* Report Cards */
         .report-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
@@ -66,24 +63,11 @@
             flex-shrink: 0;
         }
 
-        .report-icon.primary {
-            background: #dbeafe;
-            color: #1e40af;
-        }
+        .report-icon.primary { background: #dbeafe; color: #1e40af; }
+        .report-icon.success { background: #d1fae5; color: #065f46; }
+        .report-icon.info { background: #cffafe; color: #0e7490; }
 
-        .report-icon.success {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .report-icon.info {
-            background: #cffafe;
-            color: #0e7490;
-        }
-
-        .report-icon i {
-            font-size: 28px;
-        }
+        .report-icon i { font-size: 28px; }
 
         .report-info h3 {
             font-size: 16px;
@@ -137,56 +121,12 @@
             cursor: pointer;
         }
 
-        .report-btn.primary {
-            background: var(--acc-primary);
-            color: white;
-        }
+        .report-btn.primary { background: var(--acc-primary); color: white; }
+        .report-btn.success { background: #059669; color: white; }
+        .report-btn.info { background: #0891b2; color: white; }
+        .report-btn.excel { background: #10b981; color: white; }
+        .report-btn.word { background: #2563eb; color: white; }
 
-        .report-btn.primary:hover {
-            background: var(--acc-light-blue);
-        }
-
-        .report-btn.success {
-            background: #059669;
-            color: white;
-        }
-
-        .report-btn.success:hover {
-            background: #047857;
-        }
-
-        .report-btn.info {
-            background: #0891b2;
-            color: white;
-        }
-
-        .report-btn.info:hover {
-            background: #0e7490;
-        }
-
-        .report-btn.excel {
-            background: #10b981;
-            color: white;
-        }
-
-        .report-btn.excel:hover {
-            background: #059669;
-        }
-
-        .report-btn.word {
-            background: #2563eb;
-            color: white;
-        }
-
-        .report-btn.word:hover {
-            background: #1d4ed8;
-        }
-
-        .report-btn i {
-            font-size: 14px;
-        }
-
-        /* Stats Card */
         .stats-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
@@ -207,9 +147,7 @@
             margin: 0;
         }
 
-        .stats-body {
-            padding: 20px;
-        }
+        .stats-body { padding: 20px; }
 
         .stat-item {
             background: var(--bg-primary);
@@ -219,30 +157,11 @@
             transition: all 0.2s;
         }
 
-        .stat-item:hover {
-            background: #eff6ff;
-        }
-
-        .stat-icon {
-            font-size: 32px;
-            margin-bottom: 12px;
-        }
-
-        .stat-icon.primary {
-            color: #1e40af;
-        }
-
-        .stat-icon.success {
-            color: #059669;
-        }
-
-        .stat-icon.info {
-            color: #0891b2;
-        }
-
-        .stat-icon.warning {
-            color: #d97706;
-        }
+        .stat-icon { font-size: 32px; margin-bottom: 12px; }
+        .stat-icon.primary { color: #1e40af; }
+        .stat-icon.success { color: #059669; }
+        .stat-icon.info { color: #0891b2; }
+        .stat-icon.warning { color: #d97706; }
 
         .stat-value {
             font-size: 28px;
@@ -257,32 +176,14 @@
             color: var(--text-tertiary);
             margin: 0;
         }
-
-        @media (max-width: 768px) {
-            .page-header h1 {
-                font-size: 20px;
-            }
-
-            .report-header {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .stat-item {
-                margin-bottom: 12px;
-            }
-        }
     </style>
 
     <div class="reports-container">
-        <!-- Header -->
         <div class="page-header">
             <h1>Reports & Analytics</h1>
         </div>
 
-        <!-- Report Cards -->
         <div class="row g-3 mb-4">
-            <!-- Schedule Report -->
             <div class="col-12 col-md-4">
                 <div class="report-card">
                     <div class="report-header">
@@ -306,27 +207,22 @@
                         </select>
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
                             <button type="button" class="report-btn info" onclick="viewSchedule()">
-                                <i class='bx bx-show'></i>
-                                View
+                                <i class='bx bx-show'></i> View
                             </button>
                             <button type="button" class="report-btn primary" onclick="downloadSchedulePdf()">
-                                <i class='bx bxs-file-pdf'></i>
-                                PDF
+                                <i class='bx bxs-file-pdf'></i> PDF
                             </button>
                             <button type="button" class="report-btn excel" onclick="downloadScheduleExcel()">
-                                <i class='bx bxs-file'></i>
-                                Excel
+                                <i class='bx bxs-file'></i> Excel
                             </button>
                             <button type="button" class="report-btn word" onclick="downloadScheduleWord()">
-                                <i class='bx bxs-file-doc'></i>
-                                Word
+                                <i class='bx bxs-file-doc'></i> Word
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Faculty Load Report -->
             <div class="col-12 col-md-4">
                 <div class="report-card">
                     <div class="report-header">
@@ -350,27 +246,22 @@
                         </select>
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
                             <button type="button" class="report-btn info" onclick="viewFaculty()">
-                                <i class='bx bx-show'></i>
-                                View
+                                <i class='bx bx-show'></i> View
                             </button>
                             <button type="button" class="report-btn primary" onclick="downloadFacultyPdf()">
-                                <i class='bx bxs-file-pdf'></i>
-                                PDF
+                                <i class='bx bxs-file-pdf'></i> PDF
                             </button>
                             <button type="button" class="report-btn excel" onclick="downloadFacultyExcel()">
-                                <i class='bx bxs-file'></i>
-                                Excel
+                                <i class='bx bxs-file'></i> Excel
                             </button>
                             <button type="button" class="report-btn word" onclick="downloadFacultyWord()">
-                                <i class='bx bxs-file-doc'></i>
-                                Word
+                                <i class='bx bxs-file-doc'></i> Word
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Room Utilization Report -->
             <div class="col-12 col-md-4">
                 <div class="report-card">
                     <div class="report-header">
@@ -394,20 +285,16 @@
                         </select>
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
                             <button type="button" class="report-btn info" onclick="viewRoom()">
-                                <i class='bx bx-show'></i>
-                                View
+                                <i class='bx bx-show'></i> View
                             </button>
                             <button type="button" class="report-btn primary" onclick="downloadRoomPdf()">
-                                <i class='bx bxs-file-pdf'></i>
-                                PDF
+                                <i class='bx bxs-file-pdf'></i> PDF
                             </button>
                             <button type="button" class="report-btn excel" onclick="downloadRoomExcel()">
-                                <i class='bx bxs-file'></i>
-                                Excel
+                                <i class='bx bxs-file'></i> Excel
                             </button>
                             <button type="button" class="report-btn word" onclick="downloadRoomWord()">
-                                <i class='bx bxs-file-doc'></i>
-                                Word
+                                <i class='bx bxs-file-doc'></i> Word
                             </button>
                         </div>
                     </div>
@@ -415,7 +302,6 @@
             </div>
         </div>
 
-        <!-- Quick Stats -->
         <div class="stats-card">
             <div class="stats-header">
                 <h2>Quick Statistics</h2>
@@ -471,7 +357,6 @@
                 return semesterId;
             }
 
-            // Schedule Reports
             function viewSchedule() {
                 const semesterId = checkSemester('semester_schedule');
                 if (semesterId) {
@@ -500,7 +385,6 @@
                 }
             }
 
-            // Faculty Load Reports
             function viewFaculty() {
                 const semesterId = checkSemester('semester_faculty');
                 if (semesterId) {
@@ -529,7 +413,6 @@
                 }
             }
 
-            // Room Utilization Reports
             function viewRoom() {
                 const semesterId = checkSemester('semester_room');
                 if (semesterId) {

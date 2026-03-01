@@ -12,15 +12,8 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .page-actions {
@@ -59,9 +52,7 @@
             color: white;
         }
 
-        .create-btn i {
-            font-size: 18px;
-        }
+        .create-btn i { font-size: 18px; }
 
         /* Table Card */
         .table-card {
@@ -71,9 +62,7 @@
             overflow: hidden;
         }
 
-        .table-wrapper {
-            overflow-x: auto;
-        }
+        .table-wrapper { overflow-x: auto; }
 
         .students-table {
             width: 100%;
@@ -103,17 +92,8 @@
             border-bottom: 1px solid var(--border-light);
         }
 
-        .students-table tbody tr {
-            transition: background 0.2s;
-        }
-
-        .students-table tbody tr:hover {
-            background: var(--bg-primary);
-        }
-
-        .students-table tbody tr:last-child td {
-            border-bottom: none;
-        }
+        .students-table tbody tr:hover { background: var(--bg-primary); }
+        .students-table tbody tr:last-child td { border-bottom: none; }
 
         /* Badges */
         .badge {
@@ -126,39 +106,11 @@
             font-weight: 600;
         }
 
-        .badge.regular {
-            background: #f0fdf4;
-            color: #059669;
-        }
-
-        .badge.irregular {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .badge.loa {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .badge.probation {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .badge.active {
-            background: #f0fdf4;
-            color: #059669;
-        }
-
-        .badge.inactive {
-            background: #f9fafb;
-            color: #6b7280;
-        }
-
-        .badge i {
-            font-size: 12px;
-        }
+        .badge.regular { background: #f0fdf4; color: #059669; }
+        .badge.irregular { background: #fef3c7; color: #92400e; }
+        .badge.loa, .badge.probation { background: #fee2e2; color: #991b1b; }
+        .badge.active { background: #f0fdf4; color: #059669; }
+        .badge.inactive { background: #f9fafb; color: #6b7280; }
 
         /* Action Buttons */
         .action-buttons {
@@ -181,36 +133,10 @@
             cursor: pointer;
         }
 
-        .action-btn.schedule {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .action-btn.schedule:hover {
-            background: #bfdbfe;
-        }
-
-        .action-btn.edit {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .action-btn.edit:hover {
-            background: #fde68a;
-        }
-
-        .action-btn.delete {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .action-btn.delete:hover {
-            background: #fecaca;
-        }
-
-        .action-btn i {
-            font-size: 14px;
-        }
+        .action-btn.schedule { background: #dbeafe; color: #1e40af; }
+        .action-btn.schedule:hover { background: #bfdbfe; }
+        .action-btn.edit { background: #fef3c7; color: #92400e; }
+        .action-btn.edit:hover { background: #fde68a; }
 
         /* Fixed Dropdown Menu - Portal Style */
         .schedule-dropdown {
@@ -225,20 +151,11 @@
             animation: slideDown 0.2s ease;
         }
 
-        .schedule-dropdown.show {
-            display: block;
-        }
+        .schedule-dropdown.show { display: block; }
 
         @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .schedule-dropdown a {
@@ -254,23 +171,8 @@
             border-bottom: 1px solid #f3f4f6;
         }
 
-        .schedule-dropdown a:first-child {
-            border-radius: 8px 8px 0 0;
-        }
-
-        .schedule-dropdown a:last-child {
-            border-bottom: none;
-            border-radius: 0 0 8px 8px;
-        }
-
-        .schedule-dropdown a:hover {
-            background: #f9fafb;
-            color: #1e40af;
-        }
-
-        .schedule-dropdown a i {
-            font-size: 18px;
-        }
+        .schedule-dropdown a:hover { background: #f9fafb; color: #1e40af; }
+        .schedule-dropdown a i { font-size: 18px; }
 
         /* Empty State */
         .empty-state {
@@ -285,18 +187,6 @@
             margin-bottom: 16px;
         }
 
-        .empty-state-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-        }
-
-        .empty-state-text {
-            font-size: 13px;
-            color: var(--text-tertiary);
-        }
-
         /* Pagination */
         .pagination-wrapper {
             padding: 16px;
@@ -305,39 +195,14 @@
             justify-content: center;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
-            .page-actions {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .page-actions h1 {
-                font-size: 20px;
-            }
-
-            .create-btn {
-                justify-content: center;
-            }
-
-            .students-table thead th {
-                padding: 10px 12px;
-                font-size: 10px;
-            }
-
-            .students-table tbody td {
-                padding: 12px;
-                font-size: 12px;
-            }
-
-            .action-buttons {
-                flex-wrap: wrap;
-            }
+            .page-actions { flex-direction: column; align-items: stretch; }
+            .action-buttons { flex-wrap: wrap; }
+            .action-btn { width: 100%; justify-content: center; }
         }
     </style>
 
     <div class="students-container">
-        <!-- Header -->
         <div class="page-actions">
             <h1>Students</h1>
             <a href="{{ route('students.create') }}" class="create-btn">
@@ -346,7 +211,6 @@
             </a>
         </div>
 
-        <!-- Table -->
         <div class="table-card">
             <div class="table-wrapper">
                 <table class="students-table">
@@ -383,7 +247,6 @@
                                 </td>
                                 <td>
                                     <div class="action-buttons">
-                                        <!-- Schedule Button -->
                                         <button type="button" class="action-btn schedule"
                                             id="schedule-btn-{{ $student->id }}"
                                             onclick="toggleScheduleMenu(event, {{ $student->id }})">
@@ -396,16 +259,7 @@
                                             Edit
                                         </a>
 
-                                        <form action="{{ route('students.destroy', $student) }}" method="POST"
-                                            style="display: inline;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="action-btn delete"
-                                                onclick="return confirm('Are you sure you want to delete this student?')">
-                                                <i class='bx bx-trash'></i>
-                                                Delete
-                                            </button>
-                                        </form>
+                                        {{-- Delete Button and Form Removed --}}
                                     </div>
                                 </td>
                             </tr>
@@ -432,7 +286,6 @@
         </div>
     </div>
 
-    <!-- Fixed Dropdown Menu (Portal) -->
     <div id="schedule-dropdown" class="schedule-dropdown">
         <a href="#" id="pdf-link" target="_blank">
             <i class='bx bxs-file-pdf' style="color: #dc2626;"></i>
@@ -455,32 +308,25 @@
 
             function toggleScheduleMenu(event, studentId) {
                 event.stopPropagation();
-
                 const button = document.getElementById(`schedule-btn-${studentId}`);
                 const buttonRect = button.getBoundingClientRect();
 
-                // Close if clicking same button
                 if (currentStudentId === studentId && dropdown.classList.contains('show')) {
                     dropdown.classList.remove('show');
                     currentStudentId = null;
                     return;
                 }
 
-                // Update links with student routes
                 document.getElementById('pdf-link').href = `/students/${studentId}/schedule-pdf`;
                 document.getElementById('excel-link').href = `/students/${studentId}/schedule-excel`;
                 document.getElementById('word-link').href = `/students/${studentId}/schedule-word`;
 
-                // Position dropdown below button
                 dropdown.style.top = (buttonRect.bottom + window.scrollY + 4) + 'px';
                 dropdown.style.left = buttonRect.left + 'px';
-
-                // Show dropdown
                 dropdown.classList.add('show');
                 currentStudentId = studentId;
             }
 
-            // Close dropdown when clicking outside
             document.addEventListener('click', function(e) {
                 if (!e.target.closest('.action-btn.schedule') && !e.target.closest('#schedule-dropdown')) {
                     dropdown.classList.remove('show');
@@ -488,7 +334,6 @@
                 }
             });
 
-            // Update dropdown position on scroll
             window.addEventListener('scroll', function() {
                 if (dropdown.classList.contains('show') && currentStudentId) {
                     const button = document.getElementById(`schedule-btn-${currentStudentId}`);
@@ -498,14 +343,6 @@
                         dropdown.style.left = buttonRect.left + 'px';
                     }
                 }
-            });
-
-            // Close dropdown on link click
-            document.querySelectorAll('#schedule-dropdown a').forEach(link => {
-                link.addEventListener('click', function() {
-                    dropdown.classList.remove('show');
-                    currentStudentId = null;
-                });
             });
         </script>
     @endpush

@@ -7,6 +7,7 @@ use App\Models\Section;
 use App\Models\Faculty;
 use App\Models\ScheduleConflict;
 use App\Models\Semester;
+use App\Models\Course;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -17,6 +18,7 @@ class DashboardController extends Controller
 
         $data = [
             'currentSemester' => Semester::with('academicYear')->where('is_active', true)->first(),
+            'courses' => Course::with('sections')->get(),
         ];
 
         if ($user->isAdmin()) {

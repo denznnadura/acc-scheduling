@@ -12,13 +12,16 @@ use Illuminate\Support\Facades\DB;
 
 class EnrollmentController extends Controller
 {
-    // ADMIN: Manage all enrollments (No changes here)
     public function adminIndex(Request $request)
     {
         $currentSemester = Semester::where('is_active', true)->first();
 
-        $query = Enrollment::with(['student.user', 'student.section', 'schedule.course', 'schedule.faculty.user'])
-            ->where('semester_id', $currentSemester->id ?? null);
+        // Ginawa nating grouped ang query para hindi paulit-ulit ang student sa table
+        $query = Enrollment::with(['student.user', 'student.section'])
+            ->select('student_id', 'semester_id', DB::raw('MAX(id) as id'))
+            ->where('semester_id', $currentSemester->id ?? null)
+            ->where('status', 'enrolled')
+            ->groupBy('student_id', 'semester_id');
 
         if ($request->filled('section_id')) {
             $query->whereHas('student', function ($q) use ($request) {
@@ -42,15 +45,24 @@ class EnrollmentController extends Controller
         return view('admin.enrollments.index', compact('enrollments', 'sections', 'students', 'schedules', 'currentSemester'));
     }
 
-    /**
-     * UPDATED ADMIN STORE: Automated Section-Based Enrollment
-     * This will now find all schedules for the student's section and enroll them automatically.
-     */
+    // Bagong function para makuha ang schedule details sa Modal
+    public function getStudentSchedule($studentId)
+    {
+        $currentSemester = Semester::where('is_active', true)->first();
+        
+        $schedules = Enrollment::with(['schedule.course', 'schedule.faculty.user', 'schedule.room'])
+            ->where('student_id', $studentId)
+            ->where('semester_id', $currentSemester->id)
+            ->where('status', 'enrolled')
+            ->get();
+
+        return response()->json($schedules);
+    }
+
     public function adminStore(Request $request)
     {
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
-            // schedule_id is now optional because we will prioritize auto-detecting all schedules
             'schedule_id' => 'nullable|exists:schedules,id',
         ]);
 
@@ -61,7 +73,6 @@ class EnrollmentController extends Controller
             return back()->withErrors(['error' => 'No active semester found.']);
         }
 
-        // SMART LOGIC: Find all active schedules that belong to the student's section
         $sectionSchedules = Schedule::where('section_id', $student->section_id)
             ->where('semester_id', $currentSemester->id)
             ->where('status', 'active')
@@ -77,19 +88,16 @@ class EnrollmentController extends Controller
             $skippedCount = 0;
 
             foreach ($sectionSchedules as $schedule) {
-                // Check if already enrolled in this specific schedule
                 $alreadyEnrolled = Enrollment::where('student_id', $student->id)
                     ->where('schedule_id', $schedule->id)
                     ->where('status', 'enrolled')
                     ->exists();
 
-                // Skip if already enrolled or if schedule is full
                 if ($alreadyEnrolled || $schedule->enrolled_students >= $schedule->max_students) {
                     $skippedCount++;
                     continue;
                 }
 
-                // Create Enrollment record
                 Enrollment::create([
                     'student_id' => $student->id,
                     'schedule_id' => $schedule->id,
@@ -98,7 +106,6 @@ class EnrollmentController extends Controller
                     'enrolled_at' => now(),
                 ]);
 
-                // Increment student count in the schedule table
                 $schedule->increment('enrolled_students');
                 $enrolledCount++;
             }
@@ -112,7 +119,7 @@ class EnrollmentController extends Controller
             
             $msg = "Successfully enrolled student in {$enrolledCount} subjects.";
             if ($skippedCount > 0) {
-                $msg .= " ({$skippedCount} subjects were skipped as they were already enrolled or full).";
+                $msg .= " ({$skippedCount} subjects were skipped).";
             }
 
             return back()->with('success', $msg);
@@ -123,7 +130,6 @@ class EnrollmentController extends Controller
         }
     }
 
-    // ADMIN: Drop student enrollment (No changes here)
     public function adminDestroy(Enrollment $enrollment)
     {
         DB::beginTransaction();
@@ -145,7 +151,6 @@ class EnrollmentController extends Controller
         }
     }
 
-    // STUDENT: View only their enrollments (No changes here)
     public function index()
     {
         $student = auth()->user()->student;

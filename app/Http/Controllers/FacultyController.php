@@ -6,9 +6,11 @@ use App\Models\Faculty;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Department;
+use App\Models\Semester;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class FacultyController extends Controller
 {
@@ -141,5 +143,36 @@ class FacultyController extends Controller
             DB::rollBack();
             return back()->withErrors(['error' => 'Failed to delete faculty.']);
         }
+    }
+
+    public function downloadSchedulePdf(Request $request, $id = null)
+    {
+        $semesterId = $request->get('semester_id');
+        
+        $semester = Semester::with('academicYear')->find($semesterId);
+
+        if (!$semester) {
+            $semester = Semester::with('academicYear')->where('is_active', true)->first();
+        }
+
+        $query = Faculty::with(['user', 'department', 'schedules' => function ($q) use ($semester) {
+            $q->where('semester_id', $semester->id)
+              ->with(['course', 'section', 'room']);
+        }]);
+
+        if ($id) {
+            $facultyLoads = $query->where('id', $id)->get();
+        } else {
+            $facultyLoads = $query->whereHas('schedules', function ($q) use ($semester) {
+                $q->where('semester_id', $semester->id);
+            })->get();
+        }
+
+        $pdf = Pdf::loadView('reports.faculty-load-pdf', [
+            'semester' => $semester,
+            'facultyLoads' => $facultyLoads,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream('Faculty_Load_Report.pdf');
     }
 }
